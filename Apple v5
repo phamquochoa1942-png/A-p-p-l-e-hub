@@ -1,143 +1,148 @@
---[[
-    APPLE HUB V5 - GRAVITY UI REMAKE (TEST LOGIC)
-    Dùng cho: Executor (Delta, Fluxus, Hydrogen,...)
---]]
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/Addons/InterfaceManager.lua"))()
 
--- Tải thư viện Orion Library
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
-
--- Tạo Window chính
-local Window = OrionLib:MakeWindow({
-    Name = "Gravity Hub | Apple Hub V5", 
-    HidePremium = false, 
-    SaveConfig = true, 
-    ConfigFolder = "AppleHubV5",
-    IntroText = "Apple Hub V5 Loading..."
+-- [[ CẤU HÌNH WINDOW GIỐNG ẢNH ]]
+local Window = Fluent:CreateWindow({
+    Title = "🍎 Apple Hub | V5 Banana Killer (GOD)",
+    SubTitle = "By Quoc Hoa",
+    TabWidth = 180, -- Độ rộng Sidebar giống ảnh bạn gửi
+    Size = UDim2.fromOffset(620, 420), -- Kích thước chuẩn UI Hub
+    Acrylic = false, -- Tắt Acrylic để màu nền tối chuẩn hơn
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl 
 })
 
---[[ ============================== TAB 1: HOME ============================== ]]
-local HomeTab = Window:MakeTab({
-    Name = "Tab Home",
-    Icon = "rbxassetid://4483345998",
-    Premium = false
+-- [[ CUSTOM THEME: MÀU TỐI + VIỀN VÀNG KIM ]]
+Fluent:SetTheme({
+    AccentColor = Color3.fromRGB(255, 215, 0), -- Màu vàng kim cho các nút/viền
+    BackgroundColor = Color3.fromRGB(15, 15, 15), -- Nền tối sẫm
+    HeaderColor = Color3.fromRGB(20, 20, 20),
+    TabColor = Color3.fromRGB(25, 25, 25),
+    TabActiveColor = Color3.fromRGB(255, 215, 0) -- Tab đang chọn sẽ hiện màu vàng
 })
 
-HomeTab:AddParagraph("Xin chào!","Đây là bản Remake UI Gravity cho Apple Hub V5.")
-HomeTab:AddParagraph("Trạng thái:","Logic đang ở chế độ TEST (Giả lập thông báo).")
+-- [[ QUẢN LÝ BIẾN (GIỮ NGUYÊN) ]]
+_G.AutoFarm = false
+_G.AutoChest = false
+_G.BringMob = true
+_G.FastAttack = true
+_G.SelectWeapon = "Melee"
 
---[[ ============================== TAB 2: FARMING ============================== ]]
-local FarmingTab = Window:MakeTab({
-    Name = "Tab Farming",
-    Icon = "rbxassetid://4483362458",
-    Premium = false
-})
-
-FarmingTab:AddLabel("--- Setting Farm ---")
-
--- Chọn vũ khí
-FarmingTab:AddDropdown({
-    Name = "Select Weapon",
-    Default = "Melee",
-    Options = {"Melee", "Sword", "Fruit"},
-    Callback = function(Value)
-        OrionLib:MakeNotification({
-            Name = "Apple Hub",
-            Content = "Đã chọn: " .. Value,
-            Time = 2
-        })
-    end    
-})
-
--- Tốc độ đánh
-FarmingTab:AddDropdown({
-    Name = "Select Fast Delay",
-    Default = "Fast Attack",
-    Options = {"Normal", "Fast Attack", "Slow"},
-    Callback = function(Value)
-        OrionLib:MakeNotification({
-            Name = "Speed:",
-            Content = "Tốc độ: " .. Value,
-            Time = 2
-        })
-    end    
-})
-
-FarmingTab:AddLabel("--- Main Farm ---")
-
--- Auto Farm Level
-FarmingTab:AddToggle({
-    Name = "Auto Farm Level",
-    Default = false,
-    Callback = function(Value)
-        _G.AutoFarm = Value
-        if _G.AutoFarm then
-            OrionLib:MakeNotification({
-                Name = "Apple Hub",
-                Content = "Đang tìm Quest và quái phù hợp...",
-                Time = 3
-            })
-        else
-            OrionLib:MakeNotification({
-                Name = "Apple Hub",
-                Content = "Đã dừng Auto Farm.",
-                Time = 2
-            })
-        end
-    end    
-})
-
--- Auto Farm Nearest
-FarmingTab:AddToggle({
-    Name = "Auto Farm Nearest",
-    Default = false,
-    Callback = function(Value)
-        if Value then
-            OrionLib:MakeNotification({
-                Name = "Apple Hub",
-                Content = "Bật: Farm quái gần nhất",
-                Time = 2
-            })
-        end
-    end    
-})
-
--- Các nút Raid
-FarmingTab:AddButton({
-    Name = "Auto Factory Raid",
-    Callback = function()
-        OrionLib:MakeNotification({
-            Name = "Raid Status",
-            Content = "Đang đợi Factory mở cửa... (Giả lập)",
-            Time = 3
-        })
-    end
-})
-
-FarmingTab:AddButton({
-    Name = "Auto Pirate Raid",
-    Callback = function()
-        OrionLib:MakeNotification({
-            Name = "Raid Status",
-            Content = "Đang kiểm tra Pirate Raid... (Giả lập)",
-            Time = 3
-        })
-    end
-})
-
---[[ ============================== CÁC TAB CÒN LẠI ============================== ]]
-local OtherTabs = {
-    "Tab Setting", "Tab Fishing", "Tab Quest And Item", 
-    "Tab Sea Event", "Tab Mirage And Race", "Tab Stats And Esp"
+-- [[ TẠO TAB THEO THỨ TỰ TRONG ẢNH ]]
+local Tabs = {
+    Home = Window:AddTab({ Title = "Tab Home", Icon = "home" }),
+    Farming = Window:AddTab({ Title = "Tab Farming", Icon = "shovels" }),
+    Setting = Window:AddTab({ Title = "Tab Setting", Icon = "settings" }),
+    Fishing = Window:AddTab({ Title = "Tab Fishing", Icon = "fish" }),
+    QuestItem = Window:AddTab({ Title = "Tab Quest And Item", Icon = "clipboard-list" }),
+    SeaEvent = Window:AddTab({ Title = "Tab Sea Event", Icon = "waves" }),
+    MirageRace = Window:AddTab({ Title = "Tab Mirage And Race", Icon = "compass" }),
+    StatsEsp = Window:AddTab({ Title = "Tab Stats And Esp", Icon = "bar-chart" }),
+    FruitRaid = Window:AddTab({ Title = "Tab Fruit And Raid", Icon = "zap" }),
+    Combat = Window:AddTab({ Title = "Combat Tools", Icon = "swords" }),
+    Music = Window:AddTab({ Title = "Music", Icon = "music" }),
+    FixLag = Window:AddTab({ Title = "Fix Lag", Icon = "zap" })
 }
 
-for _, tabName in pairs(OtherTabs) do
-    Window:MakeTab({
-        Name = tabName,
-        Icon = "rbxassetid://4483362458",
-        Premium = false
-    }):AddLabel("Tính năng " .. tabName .. " đang phát triển...")
+-- --- TAB FARMING (GIỐNG 100% BỐ CỤC ẢNH) ---
+local FarmSection = Tabs.Farming:AddSection("Setting Farm")
+
+FarmSection:AddDropdown("WeaponSelect", {
+    Title = "Select Weapon:",
+    Values = {"Melee", "Sword", "Blox Fruit"},
+    Default = "Melee",
+    Callback = function(Value) _G.SelectWeapon = Value end
+})
+
+FarmSection:AddToggle("FastAttack", {
+    Title = "Select Fast Delay: Fast Attack",
+    Default = true,
+    Callback = function(Value) _G.FastAttack = Value end
+})
+
+local MainSection = Tabs.Farming:AddSection("Main")
+
+MainSection:AddToggle("AutoFarm", {
+    Title = "Auto Farm Level", 
+    Default = false,
+    Callback = function(Value) _G.AutoFarm = Value end
+})
+
+MainSection:AddToggle("AutoChest", {
+    Title = "Auto Farm Rương", 
+    Default = false,
+    Callback = function(Value) _G.AutoChest = Value end
+})
+
+-- --- TAB MUSIC (GIỮ LOGIC CỦA BẠN) ---
+local currentSound = nil
+local MusicGroup = Tabs.Music:AddSection("🎵 Music Player")
+
+local songs = {
+    {"Mặc Vẩn Quy Kỳ", "126846792948717"},
+    {"Poker face", "92706949906032"},
+    {"Passo", "136729917310719"}
+}
+
+for _, song in ipairs(songs) do
+    MusicGroup:AddButton({
+        Title = "🎵 " .. song[1],
+        Callback = function()
+            if currentSound then currentSound:Destroy() end
+            currentSound = Instance.new("Sound", workspace)
+            currentSound.SoundId = "rbxassetid://" .. song[2]
+            currentSound.Looped = true
+            currentSound:Play()
+            Fluent:Notify({ Title = "Music", Content = "Đang phát: " .. song[1], Duration = 2 })
+        end
+    })
 end
 
--- Khởi tạo UI
-OrionLib:Init()
+-- --- TAB FIX LAG (GIỮ LOGIC CỦA BẠN) ---
+local FixGroup = Tabs.FixLag:AddSection("🔧 Tối Ưu")
+FixGroup:AddButton({
+    Title = "FPS Boost (Potato Mode)",
+    Callback = function()
+        game:GetService("Lighting").GlobalShadows = false
+        workspace.Terrain.WaterWaveSize = 0
+        workspace.Terrain.WaterReflectance = 0
+        Fluent:Notify({ Title = "FPS Boost", Content = "Đã bật chế độ siêu nhẹ!", Duration = 2 })
+    end
+})
+
+-- --- HỆ THỐNG LOGIC VẬN HÀNH (GIỮ NGUYÊN) ---
+task.spawn(function()
+    while true do
+        task.wait()
+        if _G.AutoFarm then
+            pcall(function()
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
+                -- Logic farm của bạn ở đây
+            end)
+        end
+    end
+end)
+
+-- [[ NÚT TRÒN 🍎 TRÊN MÀN HÌNH ]]
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local ToggleButton = Instance.new("TextButton", ScreenGui)
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Position = UDim2.new(0, 10, 0, 200)
+ToggleButton.Text = "🍎"
+ToggleButton.TextSize = 30
+ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+local UICorner = Instance.new("UICorner", ToggleButton)
+UICorner.CornerRadius = UDim.new(1, 0)
+ToggleButton.Draggable = true
+
+ToggleButton.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+    task.wait(0.01)
+    game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
+end)
+
+Window:SelectTab(1)
+Fluent:Notify({Title = "Apple Hub V5", Content = "✅ UI đã được làm mới giống Gravity Hub!", Duration = 5})
  
