@@ -1,148 +1,108 @@
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/Addons/InterfaceManager.lua"))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- [[ CẤU HÌNH WINDOW GIỐNG ẢNH ]]
-local Window = Fluent:CreateWindow({
-    Title = "🍎 Apple Hub | V5 Banana Killer (GOD)",
-    SubTitle = "By Quoc Hoa",
-    TabWidth = 180, -- Độ rộng Sidebar giống ảnh bạn gửi
-    Size = UDim2.fromOffset(620, 420), -- Kích thước chuẩn UI Hub
-    Acrylic = false, -- Tắt Acrylic để màu nền tối chuẩn hơn
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl 
+local Window = Rayfield:CreateWindow({
+   Name = "🍎 Apple Hub | V5 Banana Killer (GOD)",
+   LoadingTitle = "Apple Hub V5",
+   LoadingSubtitle = "by Quoc Hoa",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "AppleHubV5",
+      FileName = "MainConfig"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "",
+      RememberJoins = true
+   },
+   KeySystem = false -- Tắt Key cho bạn dễ test
 })
 
--- [[ CUSTOM THEME: MÀU TỐI + VIỀN VÀNG KIM ]]
-Fluent:SetTheme({
-    AccentColor = Color3.fromRGB(255, 215, 0), -- Màu vàng kim cho các nút/viền
-    BackgroundColor = Color3.fromRGB(15, 15, 15), -- Nền tối sẫm
-    HeaderColor = Color3.fromRGB(20, 20, 20),
-    TabColor = Color3.fromRGB(25, 25, 25),
-    TabActiveColor = Color3.fromRGB(255, 215, 0) -- Tab đang chọn sẽ hiện màu vàng
+-- [[ TAB FARMING - GIỐNG ẢNH 100% ]]
+local FarmingTab = Window:CreateTab("Tab Farming", 4483362458) -- Icon Shovel
+
+local Section1 = FarmingTab:CreateSection("Setting Farm")
+
+local WeaponDrop = FarmingTab:CreateDropdown({
+   Name = "Select Weapon:",
+   Options = {"Melee","Sword","Blox Fruit"},
+   CurrentOption = {"Melee"},
+   MultipleOptions = false,
+   Flag = "WeaponSelect",
+   Callback = function(Option)
+      _G.SelectWeapon = Option[1]
+   end,
 })
 
--- [[ QUẢN LÝ BIẾN (GIỮ NGUYÊN) ]]
-_G.AutoFarm = false
-_G.AutoChest = false
-_G.BringMob = true
-_G.FastAttack = true
-_G.SelectWeapon = "Melee"
-
--- [[ TẠO TAB THEO THỨ TỰ TRONG ẢNH ]]
-local Tabs = {
-    Home = Window:AddTab({ Title = "Tab Home", Icon = "home" }),
-    Farming = Window:AddTab({ Title = "Tab Farming", Icon = "shovels" }),
-    Setting = Window:AddTab({ Title = "Tab Setting", Icon = "settings" }),
-    Fishing = Window:AddTab({ Title = "Tab Fishing", Icon = "fish" }),
-    QuestItem = Window:AddTab({ Title = "Tab Quest And Item", Icon = "clipboard-list" }),
-    SeaEvent = Window:AddTab({ Title = "Tab Sea Event", Icon = "waves" }),
-    MirageRace = Window:AddTab({ Title = "Tab Mirage And Race", Icon = "compass" }),
-    StatsEsp = Window:AddTab({ Title = "Tab Stats And Esp", Icon = "bar-chart" }),
-    FruitRaid = Window:AddTab({ Title = "Tab Fruit And Raid", Icon = "zap" }),
-    Combat = Window:AddTab({ Title = "Combat Tools", Icon = "swords" }),
-    Music = Window:AddTab({ Title = "Music", Icon = "music" }),
-    FixLag = Window:AddTab({ Title = "Fix Lag", Icon = "zap" })
-}
-
--- --- TAB FARMING (GIỐNG 100% BỐ CỤC ẢNH) ---
-local FarmSection = Tabs.Farming:AddSection("Setting Farm")
-
-FarmSection:AddDropdown("WeaponSelect", {
-    Title = "Select Weapon:",
-    Values = {"Melee", "Sword", "Blox Fruit"},
-    Default = "Melee",
-    Callback = function(Value) _G.SelectWeapon = Value end
+local FastAttackToggle = FarmingTab:CreateToggle({
+   Name = "Select Fast Delay: Fast Attack",
+   CurrentValue = true,
+   Flag = "FastAttack",
+   Callback = function(Value)
+      _G.FastAttack = Value
+   end,
 })
 
-FarmSection:AddToggle("FastAttack", {
-    Title = "Select Fast Delay: Fast Attack",
-    Default = true,
-    Callback = function(Value) _G.FastAttack = Value end
+local Section2 = FarmingTab:CreateSection("Main")
+
+local FarmToggle = FarmingTab:CreateToggle({
+   Name = "Auto Farm Level",
+   CurrentValue = false,
+   Flag = "AutoFarm",
+   Callback = function(Value)
+      _G.AutoFarm = Value
+   end,
 })
 
-local MainSection = Tabs.Farming:AddSection("Main")
-
-MainSection:AddToggle("AutoFarm", {
-    Title = "Auto Farm Level", 
-    Default = false,
-    Callback = function(Value) _G.AutoFarm = Value end
+local ChestToggle = FarmingTab:CreateToggle({
+   Name = "Auto Farm Rương",
+   CurrentValue = false,
+   Flag = "AutoChest",
+   Callback = function(Value)
+      _G.AutoChest = Value
+   end,
 })
 
-MainSection:AddToggle("AutoChest", {
-    Title = "Auto Farm Rương", 
-    Default = false,
-    Callback = function(Value) _G.AutoChest = Value end
+-- [[ CÁC TAB KHÁC THEO MẪU ]]
+local HomeTab = Window:CreateTab("Tab Home", 4483345998)
+HomeTab:CreateSection("Chào mừng đến với Apple Hub V5")
+HomeTab:CreateButton({
+   Name = "Xóa UI (Destroy UI)",
+   Callback = function()
+      Rayfield:Destroy()
+   end,
 })
 
--- --- TAB MUSIC (GIỮ LOGIC CỦA BẠN) ---
-local currentSound = nil
-local MusicGroup = Tabs.Music:AddSection("🎵 Music Player")
+local SettingTab = Window:CreateTab("Tab Setting", 4483362458)
+local QuestTab = Window:CreateTab("Tab Quest And Item", 4483362458)
+local SeaTab = Window:CreateTab("Tab Sea Event", 4483362458)
+local StatsTab = Window:CreateTab("Tab Stats And Esp", 4483362458)
 
-local songs = {
-    {"Mặc Vẩn Quy Kỳ", "126846792948717"},
-    {"Poker face", "92706949906032"},
-    {"Passo", "136729917310719"}
-}
-
-for _, song in ipairs(songs) do
-    MusicGroup:AddButton({
-        Title = "🎵 " .. song[1],
-        Callback = function()
-            if currentSound then currentSound:Destroy() end
-            currentSound = Instance.new("Sound", workspace)
-            currentSound.SoundId = "rbxassetid://" .. song[2]
-            currentSound.Looped = true
-            currentSound:Play()
-            Fluent:Notify({ Title = "Music", Content = "Đang phát: " .. song[1], Duration = 2 })
-        end
-    })
-end
-
--- --- TAB FIX LAG (GIỮ LOGIC CỦA BẠN) ---
-local FixGroup = Tabs.FixLag:AddSection("🔧 Tối Ưu")
-FixGroup:AddButton({
-    Title = "FPS Boost (Potato Mode)",
-    Callback = function()
-        game:GetService("Lighting").GlobalShadows = false
-        workspace.Terrain.WaterWaveSize = 0
-        workspace.Terrain.WaterReflectance = 0
-        Fluent:Notify({ Title = "FPS Boost", Content = "Đã bật chế độ siêu nhẹ!", Duration = 2 })
-    end
-})
-
--- --- HỆ THỐNG LOGIC VẬN HÀNH (GIỮ NGUYÊN) ---
+-- [[ LOGIC VẬN HÀNH (GIỮ LẠI TỪ CODE CỦA BẠN) ]]
 task.spawn(function()
     while true do
         task.wait()
         if _G.AutoFarm then
             pcall(function()
+                -- Code auto click / farm của bạn dán ở đây
                 game:GetService("VirtualUser"):CaptureController()
                 game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
-                -- Logic farm của bạn ở đây
             end)
         end
     end
 end)
 
--- [[ NÚT TRÒN 🍎 TRÊN MÀN HÌNH ]]
-local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-local ToggleButton = Instance.new("TextButton", ScreenGui)
-ToggleButton.Size = UDim2.new(0, 50, 0, 50)
-ToggleButton.Position = UDim2.new(0, 10, 0, 200)
-ToggleButton.Text = "🍎"
-ToggleButton.TextSize = 30
-ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-local UICorner = Instance.new("UICorner", ToggleButton)
-UICorner.CornerRadius = UDim.new(1, 0)
-ToggleButton.Draggable = true
-
-ToggleButton.MouseButton1Click:Connect(function()
-    game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
-    task.wait(0.01)
-    game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
-end)
-
-Window:SelectTab(1)
-Fluent:Notify({Title = "Apple Hub V5", Content = "✅ UI đã được làm mới giống Gravity Hub!", Duration = 5})
+Rayfield:Notify({
+   Title = "Apple Hub V5",
+   Content = "Đã khởi tạo thành công! Chúc bạn farm vui vẻ.",
+   Duration = 5,
+   Image = 4483345998,
+   Actions = {
+      Ignore = {
+         Name = "Okay!",
+         Callback = function()
+            print("The user tapped Okay!")
+         end
+      },
+   },
+})
  
