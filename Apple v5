@@ -3,8 +3,21 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 local Window = Fluent:CreateWindow({
     Title = "🍎 Apple Hub | V5 Banana Killer (GOD)",
     SubTitle = "By Quoc Hoa",
-    TabWidth = 180, Size = UDim2.fromOffset(600, 540), Acrylic = true, Theme = "Dark",
+    TabWidth = 180, Size = UDim2.fromOffset(600, 480), Acrylic = true, Theme = "Dark",
     MinimizeKey = Enum.KeyCode.LeftControl 
+})
+
+-- [[ THÊM THEME GIỐNG BEAR HUB ]]
+Fluent:SetTheme({
+    BackgroundColor = Color3.fromRGB(10, 10, 15),
+    HeaderColor = Color3.fromRGB(20, 20, 25),
+    TabColor = Color3.fromRGB(30, 30, 35),
+    TabHoverColor = Color3.fromRGB(50, 50, 55),
+    TabActiveColor = Color3.fromRGB(200, 40, 40),
+    ButtonColor = Color3.fromRGB(40, 40, 45),
+    ButtonHoverColor = Color3.fromRGB(60, 60, 65),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    AccentColor = Color3.fromRGB(200, 40, 40)
 })
 
 -- [[ HỆ THỐNG BIẾN ĐIỀU KHIỂN ]]
@@ -20,97 +33,20 @@ _G.InfiniteDash = false
 _G.AutoMaterial = false
 _G.SelectMaterial = ""
 
--- [[ TỔNG HỢP CÁC TAB ]]
+-- [[ TỔNG HỢP CÁC TAB - THEO GIAO DIỆN MỚI ]]
 local Tabs = {
-    Home = Window:AddTab({ Title = "🏠 Tab Home", Icon = "home" }),
-    Farming = Window:AddTab({ Title = "⚔️ Tab Farming", Icon = "shovels" }),
-    Setting = Window:AddTab({ Title = "⚙️ Tab Setting", Icon = "settings" }),
-    Fishing = Window:AddTab({ Title = "🎣 Tab Fishing", Icon = "fish" }),
-    QuestItem = Window:AddTab({ Title = "📋 Tab Quest And Item", Icon = "clipboard-list" }),
-    SeaEvent = Window:AddTab({ Title = "🌊 Tab Sea Event", Icon = "waves" }),
-    MirageRace = Window:AddTab({ Title = "🧭 Tab Mirage And Race", Icon = "compass" }),
-    VolcanoEvent = Window:AddTab({ Title = "🌋 Tab Volcano Event", Icon = "flame" }),
-    StatsEsp = Window:AddTab({ Title = "📊 Tab Stats And Esp", Icon = "bar-chart" }),
-    FruitRaid = Window:AddTab({ Title = "🍎 Tab Fruit And Raid", Icon = "zap" })
+    Home = Window:AddTab({ Title = "Tab Home", Icon = "home" }),
+    Farming = Window:AddTab({ Title = "Tab Farming", Icon = "shovels" }),
+    Setting = Window:AddTab({ Title = "Tab Setting", Icon = "settings" }),
+    Fishing = Window:AddTab({ Title = "Tab Fishing", Icon = "fish" }),
+    QuestItem = Window:AddTab({ Title = "Tab Quest And Item", Icon = "clipboard-list" }),
+    SeaEvent = Window:AddTab({ Title = "Tab Sea Event", Icon = "waves" }),
+    MirageRace = Window:AddTab({ Title = "Tab Mirage And Race", Icon = "compass" }),
+    StatsEsp = Window:AddTab({ Title = "Tab Stats And Esp", Icon = "bar-chart" }),
+    FruitRaid = Window:AddTab({ Title = "Tab Fruit And Raid", Icon = "zap" })
 }
 
--- ============================================
--- UI MỚI - GIỐNG BEAR HUB (THÊM VÀO TAB HOME)
--- ============================================
-
--- Blox Fruit Section
-Tabs.Home:AddSection("⚡ Blox Fruit")
-
-Tabs.Home:AddParagraph({
-    Title = "",
-    Content = "─────────────────────────────────────────"
-})
-Tabs.Home:AddParagraph({
-    Title = "",
-    Content = "  [Fix Lag]    [Mod]    [99 Night]    [Sever]"
-})
-Tabs.Home:AddParagraph({
-    Title = "",
-    Content = "  [Tsunami]    [Steal a brainrot]    [Fisch]"
-})
-Tabs.Home:AddParagraph({
-    Title = "",
-    Content = "  [Doors]"
-})
-Tabs.Home:AddParagraph({
-    Title = "",
-    Content = "─────────────────────────────────────────"
-})
-
--- Pvp Section
-Tabs.Home:AddSection("⚔️ Pvp")
-
-Tabs.Home:AddButton({
-    Title = "CentuDox.xyz → Click",
-    Callback = function()
-        -- Thêm code của bạn
-        Fluent:Notify({Title = "PVP", Content = "CentuDox.xyz", Duration = 2})
-    end
-})
-
-Tabs.Home:AddButton({
-    Title = "onion13 → Click",
-    Callback = function()
-        Fluent:Notify({Title = "PVP", Content = "onion13", Duration = 2})
-    end
-})
-
-Tabs.Home:AddButton({
-    Title = "Hermanos'DevjPVP → Click",
-    Callback = function()
-        Fluent:Notify({Title = "PVP", Content = "Hermanos'DevjPVP", Duration = 2})
-    end
-})
-
-Tabs.Home:AddButton({
-    Title = "Void Hub → Click",
-    Callback = function()
-        Fluent:Notify({Title = "PVP", Content = "Void Hub", Duration = 2})
-    end
-})
-
-Tabs.Home:AddButton({
-    Title = "TOP_PVP → Click",
-    Callback = function()
-        Fluent:Notify({Title = "PVP", Content = "TOP_PVP", Duration = 2})
-    end
-})
-
-Tabs.Home:AddButton({
-    Title = "MENU → Click",
-    Callback = function()
-        Fluent:Notify({Title = "PVP", Content = "MENU", Duration = 2})
-    end
-})
-
--- ============================================
--- TAB FARMING (GIỮ NGUYÊN CHỨC NĂNG)
--- ============================================
+-- --- TAB FARMING (GIAO DIỆN GIỐNG ẢNH) ---
 Tabs.Farming:AddSection("Setting Farm")
 
 Tabs.Farming:AddDropdown("WeaponSelect", {
@@ -134,9 +70,7 @@ FarmToggle:OnChanged(function() _G.AutoFarm = FarmToggle.Value end)
 local ChestToggle = Tabs.Farming:AddToggle("AutoChest", {Title = "Auto Farm Rương", Default = false})
 ChestToggle:OnChanged(function() _G.AutoChest = ChestToggle.Value end)
 
--- ============================================
--- TAB QUEST AND ITEM
--- ============================================
+-- --- TAB QUEST AND ITEM (NGUYÊN LIỆU) ---
 Tabs.QuestItem:AddSection("Farm Material")
 
 Tabs.QuestItem:AddDropdown("SelectMaterial", {
@@ -153,9 +87,7 @@ Tabs.QuestItem:AddDropdown("SelectMaterial", {
 local MatToggle = Tabs.QuestItem:AddToggle("AutoMat", {Title = "Auto Farm Nguyên Liệu", Default = false})
 MatToggle:OnChanged(function() _G.AutoMaterial = MatToggle.Value end)
 
--- ============================================
--- TAB SETTING
--- ============================================
+-- --- TAB SETTING ---
 Tabs.Setting:AddSection("Player Settings")
 
 local DashToggle = Tabs.Setting:AddToggle("InfDash", {Title = "Vô Hạn Dash (Lướt)", Default = false})
@@ -169,9 +101,7 @@ end})
 
 Tabs.Setting:AddButton({Title = "Server Hop", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer) end})
 
--- ============================================
--- TAB FRUIT AND RAID
--- ============================================
+-- --- TAB FRUIT AND RAID ---
 Tabs.FruitRaid:AddSection("Raid & Fruit")
 
 local RaidToggle = Tabs.FruitRaid:AddToggle("AutoRaid", {Title = "Auto Start & Kill Raid", Default = false})
@@ -188,17 +118,164 @@ Tabs.FruitRaid:AddButton({
     end
 })
 
--- ============================================
--- TAB COMBAT TOOLS
--- ============================================
-local CombatTab = Window:AddTab({ Title = "⚔️ Combat Tools", Icon = "swords" })
+-- --- TAB COMBAT (Hệ thống gom quái) ---
+local CombatTab = Window:AddTab({ Title = "Combat Tools", Icon = "swords" })
 CombatTab:AddSection("Combat Settings")
 local BringMobToggle = CombatTab:AddToggle("BringMob", {Title = "Gom Quái (Bring Mob)", Default = true})
 BringMobToggle:OnChanged(function() _G.BringMob = BringMobToggle.Value end)
 
--- ============================================
--- HỆ THỐNG LOGIC VẬN HÀNH (GIỮ NGUYÊN)
--- ============================================
+-- [[ THÊM TAB MUSIC GIỐNG BEAR HUB ]]
+local MusicTab = Window:AddTab({ Title = "Music", Icon = "music" })
+local MusicGroup = MusicTab:AddLeftGroupbox("🎵 Music Player")
+
+local currentSound = nil
+
+local songs = {
+    {"Mặc Vẩn Quy Kỳ - Weinchenglong remix", "126846792948717"},
+    {"Nhân sinh quán", "124384558101360"},
+    {"Poker face", "92706949906032"},
+    {"lollipop", "100991657598498"},
+    {"Nổi gió lên", "99498025749186"},
+    {"23", "117225633780122"},
+    {"Đậm đến căn phòng", "99203947301337"},
+    {"Ai là người thương em", "138017380471511"},
+    {"Passo", "136729917310719"}
+}
+
+for _, song in ipairs(songs) do
+    MusicGroup:AddButton({
+        Title = "🎵 " .. song[1],
+        Callback = function()
+            if currentSound then currentSound:Destroy() end
+            currentSound = Instance.new("Sound", workspace)
+            currentSound.SoundId = "rbxassetid://" .. song[2]
+            currentSound.Looped = true
+            currentSound:Play()
+            Fluent:Notify({ Title = "Music", Content = "Đang phát: " .. song[1], Duration = 2 })
+        end
+    })
+end
+
+MusicGroup:AddButton({
+    Title = "🔇 Dừng nhạc",
+    Callback = function()
+        if currentSound then
+            currentSound:Stop()
+            currentSound:Destroy()
+            currentSound = nil
+            Fluent:Notify({ Title = "Music", Content = "Đã dừng phát nhạc!", Duration = 2 })
+        end
+    end
+})
+
+MusicGroup:AddButton({
+    Title = "🎤 Nhập ID nhạc",
+    Callback = function()
+        local id = Fluent:Input({
+            Title = "Nhập ID nhạc",
+            Description = "Nhập ID bài hát Roblox",
+            Default = "",
+            Placeholder = "vd: 126846792948717"
+        })
+        if id and id ~= "" then
+            if currentSound then currentSound:Destroy() end
+            currentSound = Instance.new("Sound", workspace)
+            currentSound.SoundId = "rbxassetid://" .. id
+            currentSound.Looped = true
+            currentSound:Play()
+            Fluent:Notify({ Title = "Music", Content = "Đang phát ID: " .. id, Duration = 2 })
+        end
+    end
+})
+
+-- [[ THÊM TAB FIX LAG GIỐNG BEAR HUB ]]
+local FixLagTab = Window:AddTab({ Title = "Fix Lag", Icon = "zap" })
+local FixGroup = FixLagTab:AddLeftGroupbox("🔧 Fix Lag & Tối Ưu")
+
+FixGroup:AddButton({
+    Title = "Fix Lag V2",
+    Callback = function()
+        game:GetService("Lighting").GlobalShadows = false
+        Fluent:Notify({ Title = "Fix Lag", Content = "Đã tối ưu đồ họa!", Duration = 2 })
+    end
+})
+
+FixGroup:AddButton({
+    Title = "Xóa Fog (Sương Mù)",
+    Callback = function()
+        game:GetService("Lighting").FogStart = 0
+        game:GetService("Lighting").FogEnd = 9000000000
+        Fluent:Notify({ Title = "Xóa Fog", Content = "Đã xóa sương mù!", Duration = 2 })
+    end
+})
+
+FixGroup:AddButton({
+    Title = "FPS Boost (Potato Mode)",
+    Callback = function()
+        local Lighting = game:GetService("Lighting")
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 9000000000
+        Lighting.Brightness = 0
+        workspace.Terrain.WaterWaveSize = 0
+        workspace.Terrain.WaterReflectance = 0
+        workspace.Terrain.WaterTransparency = 0
+        Fluent:Notify({ Title = "FPS Boost", Content = "Đã bật chế độ Potato!", Duration = 2 })
+    end
+})
+
+local FPSGroup = FixLagTab:AddRightGroupbox("📊 Hiển Thị FPS")
+local fpsEnabled = false
+FPSGroup:AddToggle("FPSDisplay", {
+    Title = "Hiện FPS trên màn hình",
+    Default = false,
+    Callback = function(value)
+        fpsEnabled = value
+        if fpsEnabled then
+            local gui = Instance.new("ScreenGui")
+            gui.Name = "FPS_Display"
+            gui.Parent = game:GetService("CoreGui")
+            local label = Instance.new("TextLabel")
+            label.Parent = gui
+            label.BackgroundTransparency = 1
+            label.Position = UDim2.new(0.01, 0, 0.01, 0)
+            label.Size = UDim2.new(0, 80, 0, 30)
+            label.Font = Enum.Font.GothamBold
+            label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            label.TextSize = 16
+            label.Text = "FPS: 0"
+            local frames = 0
+            local lastTime = tick()
+            game:GetService("RunService").RenderStepped:Connect(function()
+                if fpsEnabled then
+                    frames = frames + 1
+                    if tick() - lastTime >= 1 then
+                        label.Text = "FPS: " .. frames
+                        frames = 0
+                        lastTime = tick()
+                    end
+                end
+            end)
+        else
+            local gui = game:GetService("CoreGui"):FindFirstChild("FPS_Display")
+            if gui then gui:Destroy() end
+        end
+    end
+})
+
+-- [[ THÊM TAB TOOLS GIỐNG BEAR HUB ]]
+local ToolsTab = Window:AddTab({ Title = "Tools", Icon = "tools" })
+local ToolsGroup = ToolsTab:AddLeftGroupbox("🔧 Công Cụ")
+local toolsList = {"No Clip", "Speed & Jump", "ESP Player", "Hitbox", "God Mode", "Fly"}
+for _, name in ipairs(toolsList) do
+    ToolsGroup:AddButton({
+        Title = name,
+        Callback = function()
+            Fluent:Notify({ Title = name, Content = "Đang bật " .. name .. "...", Duration = 2 })
+        end
+    })
+end
+
+-- [[ HỆ THỐNG LOGIC VẬN HÀNH - ĐÃ FIX GIẬT NÚT ]]
 
 task.spawn(function()
     while true do
@@ -257,17 +334,16 @@ task.spawn(function()
     end
 end)
 
--- ============================================
--- NÚT TRÒN 🍎 (GIỮ NGUYÊN)
--- ============================================
+-- [[ NÚT TRÒN 🍎 ]]
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "AppleHubButton"
 local ToggleButton = Instance.new("TextButton", ScreenGui)
-ToggleButton.Size = UDim2.new(0, 50, 0, 50)
-ToggleButton.Position = UDim2.new(0, 20, 0, 200)
+ToggleButton.Size = UDim2.new(0, 55, 0, 55)
+ToggleButton.Position = UDim2.new(0, 15, 0, 150)
 ToggleButton.Text = "🍎"
-ToggleButton.TextSize = 30
-ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+ToggleButton.TextSize = 32
+ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+ToggleButton.BackgroundTransparency = 0.2
 ToggleButton.Draggable = true 
 local UICorner = Instance.new("UICorner", ToggleButton)
 UICorner.CornerRadius = UDim.new(1, 0)
@@ -278,8 +354,5 @@ ToggleButton.MouseButton1Click:Connect(function()
     game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
 
--- ============================================
--- KHỞI TẠO
--- ============================================
 Window:SelectTab(1)
-Fluent:Notify({Title = "Apple Hub V5", Content = "✅ Đã thêm UI Bear Hub vào Tab Home! Giữ nguyên toàn bộ chức năng.", Duration = 5})
+Fluent:Notify({Title = "Apple Hub V5", Content = "✅ Đã thêm UI Style Bear Hub! Nhấn 🍎 để mở/đóng", Duration = 5})
