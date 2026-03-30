@@ -1,0 +1,285 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "🍎 Apple Hub | V5 Banana Killer (GOD)",
+    SubTitle = "By Quoc Hoa",
+    TabWidth = 180, Size = UDim2.fromOffset(600, 540), Acrylic = true, Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl 
+})
+
+-- [[ HỆ THỐNG BIẾN ĐIỀU KHIỂN ]]
+_G.AutoFarm = false
+_G.AutoChest = false
+_G.BringMob = true
+_G.FastAttack = true
+_G.AutoStats = false
+_G.StatPoint = "Melee"
+_G.SelectWeapon = "Melee"
+_G.AutoRaid = false
+_G.InfiniteDash = false
+_G.AutoMaterial = false
+_G.SelectMaterial = ""
+
+-- [[ TỔNG HỢP CÁC TAB ]]
+local Tabs = {
+    Home = Window:AddTab({ Title = "🏠 Tab Home", Icon = "home" }),
+    Farming = Window:AddTab({ Title = "⚔️ Tab Farming", Icon = "shovels" }),
+    Setting = Window:AddTab({ Title = "⚙️ Tab Setting", Icon = "settings" }),
+    Fishing = Window:AddTab({ Title = "🎣 Tab Fishing", Icon = "fish" }),
+    QuestItem = Window:AddTab({ Title = "📋 Tab Quest And Item", Icon = "clipboard-list" }),
+    SeaEvent = Window:AddTab({ Title = "🌊 Tab Sea Event", Icon = "waves" }),
+    MirageRace = Window:AddTab({ Title = "🧭 Tab Mirage And Race", Icon = "compass" }),
+    VolcanoEvent = Window:AddTab({ Title = "🌋 Tab Volcano Event", Icon = "flame" }),
+    StatsEsp = Window:AddTab({ Title = "📊 Tab Stats And Esp", Icon = "bar-chart" }),
+    FruitRaid = Window:AddTab({ Title = "🍎 Tab Fruit And Raid", Icon = "zap" })
+}
+
+-- ============================================
+-- UI MỚI - GIỐNG BEAR HUB (THÊM VÀO TAB HOME)
+-- ============================================
+
+-- Blox Fruit Section
+Tabs.Home:AddSection("⚡ Blox Fruit")
+
+Tabs.Home:AddParagraph({
+    Title = "",
+    Content = "─────────────────────────────────────────"
+})
+Tabs.Home:AddParagraph({
+    Title = "",
+    Content = "  [Fix Lag]    [Mod]    [99 Night]    [Sever]"
+})
+Tabs.Home:AddParagraph({
+    Title = "",
+    Content = "  [Tsunami]    [Steal a brainrot]    [Fisch]"
+})
+Tabs.Home:AddParagraph({
+    Title = "",
+    Content = "  [Doors]"
+})
+Tabs.Home:AddParagraph({
+    Title = "",
+    Content = "─────────────────────────────────────────"
+})
+
+-- Pvp Section
+Tabs.Home:AddSection("⚔️ Pvp")
+
+Tabs.Home:AddButton({
+    Title = "CentuDox.xyz → Click",
+    Callback = function()
+        -- Thêm code của bạn
+        Fluent:Notify({Title = "PVP", Content = "CentuDox.xyz", Duration = 2})
+    end
+})
+
+Tabs.Home:AddButton({
+    Title = "onion13 → Click",
+    Callback = function()
+        Fluent:Notify({Title = "PVP", Content = "onion13", Duration = 2})
+    end
+})
+
+Tabs.Home:AddButton({
+    Title = "Hermanos'DevjPVP → Click",
+    Callback = function()
+        Fluent:Notify({Title = "PVP", Content = "Hermanos'DevjPVP", Duration = 2})
+    end
+})
+
+Tabs.Home:AddButton({
+    Title = "Void Hub → Click",
+    Callback = function()
+        Fluent:Notify({Title = "PVP", Content = "Void Hub", Duration = 2})
+    end
+})
+
+Tabs.Home:AddButton({
+    Title = "TOP_PVP → Click",
+    Callback = function()
+        Fluent:Notify({Title = "PVP", Content = "TOP_PVP", Duration = 2})
+    end
+})
+
+Tabs.Home:AddButton({
+    Title = "MENU → Click",
+    Callback = function()
+        Fluent:Notify({Title = "PVP", Content = "MENU", Duration = 2})
+    end
+})
+
+-- ============================================
+-- TAB FARMING (GIỮ NGUYÊN CHỨC NĂNG)
+-- ============================================
+Tabs.Farming:AddSection("Setting Farm")
+
+Tabs.Farming:AddDropdown("WeaponSelect", {
+    Title = "Select Weapon:",
+    Values = {"Melee", "Sword", "Blox Fruit"},
+    Default = "Melee",
+    Callback = function(Value) _G.SelectWeapon = Value end
+})
+
+local FastAttackToggle = Tabs.Farming:AddToggle("FastAttack", {
+    Title = "Select Fast Delay: Fast Attack",
+    Default = true
+})
+FastAttackToggle:OnChanged(function() _G.FastAttack = FastAttackToggle.Value end)
+
+Tabs.Farming:AddSection("Main")
+
+local FarmToggle = Tabs.Farming:AddToggle("AutoFarm", {Title = "Auto Farm Level", Default = false})
+FarmToggle:OnChanged(function() _G.AutoFarm = FarmToggle.Value end)
+
+local ChestToggle = Tabs.Farming:AddToggle("AutoChest", {Title = "Auto Farm Rương", Default = false})
+ChestToggle:OnChanged(function() _G.AutoChest = ChestToggle.Value end)
+
+-- ============================================
+-- TAB QUEST AND ITEM
+-- ============================================
+Tabs.QuestItem:AddSection("Farm Material")
+
+Tabs.QuestItem:AddDropdown("SelectMaterial", {
+    Title = "Chọn Nguyên Liệu",
+    Values = {
+        "Magma Ore (Sea 1)", "Leather (Sea 1)", "Fish Tail (Sea 1)", 
+        "Mystic Droplet (Sea 2)", "Vampire Fang (Sea 2)", "Radioactive Material (Sea 2)",
+        "Dragon Scale (Sea 3)", "Conjured Cocoa (Sea 3)", "Bones (Sea 3)"
+    },
+    Default = "Bones (Sea 3)",
+    Callback = function(Value) _G.SelectMaterial = Value end
+})
+
+local MatToggle = Tabs.QuestItem:AddToggle("AutoMat", {Title = "Auto Farm Nguyên Liệu", Default = false})
+MatToggle:OnChanged(function() _G.AutoMaterial = MatToggle.Value end)
+
+-- ============================================
+-- TAB SETTING
+-- ============================================
+Tabs.Setting:AddSection("Player Settings")
+
+local DashToggle = Tabs.Setting:AddToggle("InfDash", {Title = "Vô Hạn Dash (Lướt)", Default = false})
+DashToggle:OnChanged(function() _G.InfiniteDash = DashToggle.Value end)
+
+Tabs.Setting:AddSlider("WalkSpeed", {Title = "Tốc Độ Chạy", Default = 20, Min = 20, Max = 300, Rounding = 0, Callback = function(V) 
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = V 
+    end
+end})
+
+Tabs.Setting:AddButton({Title = "Server Hop", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer) end})
+
+-- ============================================
+-- TAB FRUIT AND RAID
+-- ============================================
+Tabs.FruitRaid:AddSection("Raid & Fruit")
+
+local RaidToggle = Tabs.FruitRaid:AddToggle("AutoRaid", {Title = "Auto Start & Kill Raid", Default = false})
+RaidToggle:OnChanged(function() _G.AutoRaid = RaidToggle.Value end)
+
+Tabs.FruitRaid:AddButton({
+    Title = "Auto Nhặt Fruit",
+    Callback = function()
+        for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
+            if v:IsA("Tool") and v.Name:find("Fruit") then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Handle.CFrame
+            end
+        end
+    end
+})
+
+-- ============================================
+-- TAB COMBAT TOOLS
+-- ============================================
+local CombatTab = Window:AddTab({ Title = "⚔️ Combat Tools", Icon = "swords" })
+CombatTab:AddSection("Combat Settings")
+local BringMobToggle = CombatTab:AddToggle("BringMob", {Title = "Gom Quái (Bring Mob)", Default = true})
+BringMobToggle:OnChanged(function() _G.BringMob = BringMobToggle.Value end)
+
+-- ============================================
+-- HỆ THỐNG LOGIC VẬN HÀNH (GIỮ NGUYÊN)
+-- ============================================
+
+task.spawn(function()
+    while true do
+        task.wait()
+        if _G.AutoFarm or _G.AutoMaterial then
+            pcall(function()
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
+                
+                if _G.BringMob then
+                    local enemies = game:GetService("Workspace").Enemies:GetChildren()
+                    for _, v in pairs(enemies) do
+                        if not (_G.AutoFarm or _G.AutoMaterial) then break end
+                        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
+                            v.HumanoidRootPart.CanCollide = false
+                            v.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+                            v.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- Luồng Chest
+task.spawn(function()
+    while true do
+        task.wait(0.15)
+        if _G.AutoChest then
+            local chests = game:GetService("Workspace"):GetChildren()
+            for i,v in pairs(chests) do
+                if not _G.AutoChest then break end 
+                if v.Name:find("Chest") and v:IsA("BasePart") then
+                    pcall(function()
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+                        task.wait(0.2)
+                    end)
+                end
+            end
+        end
+    end
+end)
+
+-- Luồng Dash
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if _G.InfiniteDash then
+            pcall(function() 
+                if getrenv()._G.Characters.Dash then
+                    debug.setupvalue(getrenv()._G.Characters.Dash, 3, 0)
+                end
+            end)
+        end
+    end
+end)
+
+-- ============================================
+-- NÚT TRÒN 🍎 (GIỮ NGUYÊN)
+-- ============================================
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+ScreenGui.Name = "AppleHubButton"
+local ToggleButton = Instance.new("TextButton", ScreenGui)
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Position = UDim2.new(0, 20, 0, 200)
+ToggleButton.Text = "🍎"
+ToggleButton.TextSize = 30
+ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+ToggleButton.Draggable = true 
+local UICorner = Instance.new("UICorner", ToggleButton)
+UICorner.CornerRadius = UDim.new(1, 0)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+    task.wait(0.01)
+    game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
+end)
+
+-- ============================================
+-- KHỞI TẠO
+-- ============================================
+Window:SelectTab(1)
+Fluent:Notify({Title = "Apple Hub V5", Content = "✅ Đã thêm UI Bear Hub vào Tab Home! Giữ nguyên toàn bộ chức năng.", Duration = 5})
