@@ -1,396 +1,48 @@
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "🍎 Apple Hub | V5 Banana Killer (GOD)",
-   Icon = 0,
-   LoadingTitle = "Apple Hub",
-   LoadingSubtitle = "By Quoc Hoa",
-   Theme = "Default",
+   LoadingTitle = "Apple Hub V5 - Loading...",
+   LoadingSubtitle = "by Quoc Hoa",
    ConfigurationSaving = {
       Enabled = true,
-      FolderName = "AppleHub",
-      FileName = "Settings"
-   }
+      FolderName = "AppleHubV5",
+      FileName = "Config"
+   },
+   KeySystem = false -- Tắt key cho bạn tiện dùng
 })
 
--- ========== BIẾN CẤU HÌNH ==========
-_G.AutoFarm = false
-_G.AutoChest = false
-_G.FastAttack = true
-_G.SelectWeapon = "Melee"
-_G.AutoRaid = false
-_G.InfiniteDash = false
-_G.AutoMaterial = false
-_G.SelectMaterial = "Bones"
-_G.AutoQuest = false
-_G.BringMob = true
-_G.DistanceMob = 300
-_G.QuestNPC = "Quest Giver"
+-- Tạo Tab Farming
+local FarmingTab = Window:CreateTab("Tab Farming", 4483362458)
 
--- ========== TAB FARMING ==========
-local FarmTab = Window:CreateTab("Farming", 0)
-local FarmSection = FarmTab:CreateSection("Setting Farm")
+FarmingTab:CreateSection("Setting Farm")
 
-FarmTab:CreateDropdown({
-   Name = "Select Weapon",
-   Options = {"Melee", "Sword", "Blox Fruit"},
-   CurrentOption = "Melee",
-   Flag = "WeaponSelect",
-   Callback = function(Value)
-      _G.SelectWeapon = Value
-   end
+FarmingTab:CreateDropdown({
+   Name = "Select Weapon:",
+   Options = {"Melee","Sword","Blox Fruit"},
+   CurrentOption = {"Melee"},
+   Callback = function(Option)
+      _G.SelectWeapon = Option[1]
+   end,
 })
 
-FarmTab:CreateToggle({
+FarmingTab:CreateToggle({
    Name = "Select Fast Delay: Fast Attack",
    CurrentValue = true,
-   Flag = "FastAttack",
    Callback = function(Value)
       _G.FastAttack = Value
-   end
+   end,
 })
 
-local MainSection = FarmTab:CreateSection("Main")
+FarmingTab:CreateSection("Main")
 
-FarmTab:CreateToggle({
+FarmingTab:CreateToggle({
    Name = "Auto Farm Level",
    CurrentValue = false,
-   Flag = "AutoFarm",
    Callback = function(Value)
       _G.AutoFarm = Value
-   end
+   end,
 })
 
-FarmTab:CreateToggle({
-   Name = "Auto Farm Rương",
-   CurrentValue = false,
-   Flag = "AutoChest",
-   Callback = function(Value)
-      _G.AutoChest = Value
-   end
-})
-
--- ========== TAB QUEST ==========
-local QuestTab = Window:CreateTab("Quest", 1)
-local MaterialSection = QuestTab:CreateSection("Farm Material")
-
-QuestTab:CreateDropdown({
-   Name = "Chọn Nguyên Liệu",
-   Options = {
-      "Magma Ore (Sea 1)", "Leather (Sea 1)", "Fish Tail (Sea 1)",
-      "Mystic Droplet (Sea 2)", "Vampire Fang (Sea 2)", "Radioactive Material (Sea 2)",
-      "Dragon Scale (Sea 3)", "Conjured Cocoa (Sea 3)", "Bones (Sea 3)"
-   },
-   CurrentOption = "Bones (Sea 3)",
-   Flag = "MaterialSelect",
-   Callback = function(Value)
-      _G.SelectMaterial = Value
-   end
-})
-
-QuestTab:CreateToggle({
-   Name = "Auto Farm Nguyên Liệu",
-   CurrentValue = false,
-   Flag = "AutoMaterial",
-   Callback = function(Value)
-      _G.AutoMaterial = Value
-   end
-})
-
-local QuestSection = QuestTab:CreateSection("Auto Quest System")
-
-QuestTab:CreateToggle({
-   Name = "Auto Accept/Complete Quest",
-   CurrentValue = false,
-   Flag = "AutoQuest",
-   Callback = function(Value)
-      _G.AutoQuest = Value
-   end
-})
-
-QuestTab:CreateInput({
-   Name = "Tên NPC nhận nhiệm vụ",
-   PlaceholderText = "Quest Giver",
-   RemoveTextAfterFocus = false,
-   Flag = "QuestNPC",
-   Callback = function(Value)
-      _G.QuestNPC = Value
-   end
-})
-
--- ========== TAB COMBAT ==========
-local CombatTab = Window:CreateTab("Combat", 2)
-local CombatSection = CombatTab:CreateSection("Combat Settings")
-
-CombatTab:CreateToggle({
-   Name = "Gom Quái (Bring Mob)",
-   CurrentValue = true,
-   Flag = "BringMob",
-   Callback = function(Value)
-      _G.BringMob = Value
-   end
-})
-
-CombatTab:CreateSlider({
-   Name = "Khoảng cách gom quái",
-   Range = {50, 500},
-   Increment = 10,
-   Suffix = "Studs",
-   CurrentValue = 300,
-   Flag = "DistanceMob",
-   Callback = function(Value)
-      _G.DistanceMob = Value
-   end
-})
-
--- ========== TAB SETTING ==========
-local SettingTab = Window:CreateTab("Setting", 3)
-local PlayerSection = SettingTab:CreateSection("Player Settings")
-
-SettingTab:CreateToggle({
-   Name = "Vô Hạn Dash (Lướt)",
-   CurrentValue = false,
-   Flag = "InfiniteDash",
-   Callback = function(Value)
-      _G.InfiniteDash = Value
-   end
-})
-
-SettingTab:CreateSlider({
-   Name = "Tốc Độ Chạy",
-   Range = {16, 300},
-   Increment = 1,
-   Suffix = "Speed",
-   CurrentValue = 20,
-   Flag = "WalkSpeed",
-   Callback = function(Value)
-      if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-      end
-   end
-})
-
-SettingTab:CreateButton({
-   Name = "Server Hop",
-   Callback = function()
-      game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-   end
-})
-
--- ========== TAB RAID ==========
-local RaidTab = Window:CreateTab("Raid", 4)
-local RaidSection = RaidTab:CreateSection("Raid & Fruit")
-
-RaidTab:CreateToggle({
-   Name = "Auto Start & Kill Raid",
-   CurrentValue = false,
-   Flag = "AutoRaid",
-   Callback = function(Value)
-      _G.AutoRaid = Value
-   end
-})
-
-RaidTab:CreateButton({
-   Name = "Auto Nhặt Fruit",
-   Callback = function()
-      for i, v in pairs(game:GetService("Workspace"):GetChildren()) do
-         if v:IsA("Tool") and v.Name:find("Fruit") then
-            pcall(function()
-               game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Handle.CFrame
-            end)
-         end
-      end
-   end
-})
-
--- ========== TAB TOOLS ==========
-local ToolsTab = Window:CreateTab("Tools", 5)
-local ToolsSection = ToolsTab:CreateSection("Công Cụ")
-
-local ToolsList = {"No Clip", "ESP Player", "Hitbox", "God Mode", "Fly"}
-for _, tool in pairs(ToolsList) do
-   ToolsTab:CreateButton({
-      Name = tool,
-      Callback = function()
-         print("Đang bật " .. tool)
-         Rayfield:Notify({
-            Title = tool,
-            Content = "Đang bật " .. tool,
-            Duration = 2
-         })
-      end
-   })
-end
-
--- ========== NOTIFICATION ==========
-Rayfield:Notify({
-   Title = "Apple Hub V5",
-   Content = "✅ Đã khởi tạo thành công!",
-   Duration = 3
-})
-
--- ========== LOGIC GOM QUÁI MỚI ==========
-task.spawn(function()
-   while true do
-      task.wait()
-      if (_G.AutoFarm or _G.AutoMaterial) and _G.BringMob then
-         pcall(function()
-            local player = game.Players.LocalPlayer
-            local character = player.Character
-            if not character then return end
-            
-            local MyPos = character.HumanoidRootPart.Position
-            local TargetPos = MyPos + Vector3.new(0, -5, 0)
-            
-            for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-               if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
-                  local distance = (v.HumanoidRootPart.Position - MyPos).Magnitude
-                  if distance <= _G.DistanceMob then
-                     v.HumanoidRootPart.CanCollide = false
-                     v.HumanoidRootPart.CFrame = CFrame.new(TargetPos)
-                     if v.Humanoid:FindFirstChild("Animator") then
-                        v.Humanoid.Animator:Destroy()
-                     end
-                  end
-               end
-            end
-            
-            game:GetService("VirtualUser"):CaptureController()
-            game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
-         end)
-      end
-   end
-end)
-
--- ========== LOGIC AUTO QUEST ==========
-task.spawn(function()
-   while true do
-      task.wait(2)
-      if _G.AutoQuest and (_G.AutoFarm or _G.AutoMaterial) then
-         pcall(function()
-            local player = game.Players.LocalPlayer
-            local character = player.Character
-            if not character then return end
-            
-            local hasQuest = player:FindFirstChild("Quest") ~= nil
-            
-            if not hasQuest then
-               local MyPos = character.HumanoidRootPart.Position
-               local questNPC = nil
-               
-               for _, v in pairs(game.Workspace:GetChildren()) do
-                  if v.Name == _G.QuestNPC or v.Name == "Quest Giver" then
-                     if v:FindFirstChild("HumanoidRootPart") then
-                        questNPC = v
-                        break
-                     end
-                  end
-               end
-               
-               if not questNPC then
-                  local islands = {"Marine", "Pirate", "Desert", "Sky", "Magma", "Ice"}
-                  for _, island in pairs(islands) do
-                     local islandFolder = game.Workspace:FindFirstChild(island)
-                     if islandFolder then
-                        for _, npc in pairs(islandFolder:GetChildren()) do
-                           if npc.Name == "Quest Giver" then
-                              if npc:FindFirstChild("HumanoidRootPart") then
-                                 questNPC = npc
-                                 break
-                              end
-                           end
-                        end
-                     end
-                     if questNPC then break end
-                  end
-               end
-               
-               if questNPC and questNPC.HumanoidRootPart then
-                  local distance = (questNPC.HumanoidRootPart.Position - MyPos).Magnitude
-                  if distance <= 50 then
-                     local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
-                     if remote then
-                        local questRemote = remote:FindFirstChild("Quest")
-                        if questRemote then
-                           questRemote:FireServer(questNPC)
-                           task.wait(0.5)
-                        end
-                     end
-                  else
-                     character.HumanoidRootPart.CFrame = CFrame.new(questNPC.HumanoidRootPart.Position + Vector3.new(0, 0, 5))
-                     task.wait(1)
-                  end
-               end
-            else
-               local questData = player:FindFirstChild("Quest")
-               if questData then
-                  local required = questData:FindFirstChild("Required") or questData:FindFirstChild("Needed")
-                  local current = questData:FindFirstChild("Current") or questData:FindFirstChild("Progress")
-                  
-                  if required and current and current.Value >= required.Value then
-                     local questNPC = nil
-                     for _, v in pairs(game.Workspace:GetChildren()) do
-                        if v.Name == _G.QuestNPC or v.Name == "Quest Giver" then
-                           if v:FindFirstChild("HumanoidRootPart") then
-                              questNPC = v
-                              break
-                           end
-                        end
-                     end
-                     
-                     if questNPC then
-                        character.HumanoidRootPart.CFrame = CFrame.new(questNPC.HumanoidRootPart.Position + Vector3.new(0, 0, 5))
-                        task.wait(1)
-                        
-                        local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
-                        if remote then
-                           local questRemote = remote:FindFirstChild("Quest")
-                           if questRemote then
-                              questRemote:FireServer(questNPC)
-                              task.wait(0.5)
-                           end
-                        end
-                     end
-                  end
-               end
-            end
-         end)
-      end
-   end
-end)
-
--- ========== LOGIC AUTO CHEST ==========
-task.spawn(function()
-   while true do
-      task.wait(0.15)
-      if _G.AutoChest then
-         for _, v in pairs(game:GetService("Workspace"):GetChildren()) do
-            if v.Name:find("Chest") and v:IsA("BasePart") then
-               pcall(function()
-                  game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
-                  task.wait(0.2)
-               end)
-            end
-         end
-      end
-   end
-end)
-
--- ========== LOGIC DASH ==========
-task.spawn(function()
-   while true do
-      task.wait(0.1)
-      if _G.InfiniteDash then
-         pcall(function() 
-            if getrenv()._G.Characters and getrenv()._G.Characters.Dash then
-               debug.setupvalue(getrenv()._G.Characters.Dash, 3, 0)
-            end
-         end)
-      end
-   end
-end)
-
-print("✅ Apple Hub V5 | Banana Killer (GOD) - By Quoc Hoa")
-print("- Gom quái: " .. tostring(_G.BringMob))
-print("- Auto quest: " .. tostring(_G.AutoQuest))
-print("- Khoảng cách gom: " .. _G.DistanceMob) 
+-- (Các Tab khác bạn có thể thêm tương tự...)
+ 
