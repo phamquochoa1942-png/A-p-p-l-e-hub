@@ -1,236 +1,35 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Khoi tao thu vien tu link cua ban
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/phamquochoa1942-png/Chu-i-hub/refs/heads/main/Apple%20v5"))()
 
-local Window = Rayfield:CreateWindow({
-   Name = "🍎 Apple Hub | V5",
-   LoadingTitle = "Apple Hub - Loading...",
-   LoadingSubtitle = "by Quoc Hoa",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "AppleHubV5",
-      FileName = "Config"
-   },
-   KeySystem = false 
-})
+-- Khoi tao cua so Menu
+local Window = Library:CreateWindow("Apple Hub V5", "by Quoc Hoa", "rbxassetid://105245380363493")
 
--- [[ BIẾN CẤU HÌNH ]]
-_G.BringMob = true
-_G.DistanceMob = 300
-_G.AutoQuest = false
-_G.QuestNPC = "Quest Giver"
-_G.AutoFarm = false
-_G.AutoFarmNearest = false
+-- Tao cac Tab (Page)
+local MainTab = Window:CreatePage("Home")
+local FarmTab = Window:CreatePage("Farming")
 
--- [[ TAB HOME ]]
-local HomeTab = Window:CreateTab("🏠 Home", 4483345998)
-HomeTab:CreateSection("Thông Tin Script")
-HomeTab:CreateLabel("Phiên bản: V5")
-HomeTab:CreateLabel("Người phát triển: Quoc Hoa")
-HomeTab:CreateButton({
-   Name = "Xóa UI (Destroy UI)",
-   Callback = function() Rayfield:Destroy() end,
-})
+-- Tao Section va cac chuc nang trong Tab Home
+local HomeSection = MainTab:CreateSection("Thong tin")
 
--- [[ TAB FARMING ]]
-local FarmingTab = Window:CreateTab("⚔️ Farming", 4483362458)
-FarmingTab:CreateSection("Cài đặt vũ khí")
-FarmingTab:CreateDropdown({
-   Name = "Chọn vũ khí:",
-   Options = {"Melee","Sword","Blox Fruit"},
-   CurrentOption = {"Melee"},
-   Callback = function(Option) _G.SelectWeapon = Option[1] end,
-})
-FarmingTab:CreateToggle({
-   Name = "Đánh nhanh (Fast Attack)",
-   CurrentValue = true,
-   Callback = function(Value) _G.FastAttack = Value end,
-})
-FarmingTab:CreateSection("Chế độ Farm")
-FarmingTab:CreateToggle({
-   Name = "Auto Farm Level",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoFarm = Value end,
-})
-FarmingTab:CreateToggle({
-   Name = "Auto Farm Quái Gần Nhất",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoFarmNearest = Value end,
-})
-FarmingTab:CreateSection("Gom Quái (Combat Settings)")
-FarmingTab:CreateToggle({
-   Name = "Gom Quái (Bring Mob)",
-   CurrentValue = true,
-   Callback = function(Value) _G.BringMob = Value end,
-})
-FarmingTab:CreateSlider({
-   Name = "Khoảng cách gom quái",
-   Min = 50,
-   Max = 500,
-   CurrentValue = 300,
-   Flag = "DistanceMob",
-   Callback = function(Value) _G.DistanceMob = Value end,
-})
+HomeSection:CreateLabel("Chao mung den voi Apple Hub")
 
--- [[ TAB COMBAT ]]
-local CombatTab = Window:CreateTab("🥊 Combat", 4483362458)
-CombatTab:CreateSection("PvP Settings")
-CombatTab:CreateToggle({
-   Name = "Auto Click (Fast)",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoClick = Value end,
-})
-CombatTab:CreateToggle({
-   Name = "Silent Aim (Test)",
-   CurrentValue = false,
-   Callback = function(Value) _G.SilentAim = Value end,
-})
-CombatTab:CreateSection("Công cụ hỗ trợ")
-CombatTab:CreateButton({
-   Name = "Ẩn tên (Invis Name)",
-   Callback = function() -- Logic ẩn tên
-   end,
-})
+HomeSection:CreateButton("Bat Thong Bao", function()
+    Library:Notify("Apple Hub", "UI da chay thanh cong!", 5)
+end)
 
--- [[ TAB SEA EVENT ]]
-local SeaTab = Window:CreateTab("🌊 Sea Event", 4483362458)
-SeaTab:CreateSection("Săn Thuyền")
-SeaTab:CreateToggle({
-   Name = "Auto Farm Thuyền",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoShip = Value end,
-})
-SeaTab:CreateSection("Quái Biển")
-SeaTab:CreateToggle({
-   Name = "Auto Sea Beast",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoSB = Value end,
-})
-SeaTab:CreateToggle({
-   Name = "Auto Terror Shark",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoTerror = Value end,
-})
+-- Tao Section va chuc nang trong Tab Farming
+local FarmSection = FarmTab:CreateSection("Auto Farm")
 
--- [[ TAB QUEST & ITEM ]]
-local QuestTab = Window:CreateTab("💎 Quest & Item", 4483362458)
-QuestTab:CreateSection("Auto Quest System")
-QuestTab:CreateToggle({
-   Name = "Auto Nhận/Nộp Nhiệm Vụ",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoQuest = Value end,
-})
-QuestTab:CreateInput({
-   Name = "Tên NPC nhận nhiệm vụ",
-   PlaceholderText = "Ví dụ: Quest Giver",
-   RemoveTextAfterFocus = false,
-   Callback = function(Value) _G.QuestNPC = Value end,
-})
-QuestTab:CreateSection("Vật phẩm khác")
-QuestTab:CreateButton({
-   Name = "Tìm Mirage Island (Pull Lever)",
-   Callback = function() end,
-})
-QuestTab:CreateDropdown({
-   Name = "Chọn nguyên liệu Farm:",
-   Options = {"Bones","Conjured Cocoa","Dragon Scale","Fish Tail"},
-   CurrentOption = {"Bones"},
-   Callback = function(Option) _G.SelectMaterial = Option[1] end,
-})
+FarmSection:CreateToggle("Auto Farm Level", false, function(Value)
+    _G.AutoFarm = Value
+end)
 
--- [[ TAB STATS & ESP ]]
-local StatsTab = Window:CreateTab("📊 Stats & Esp", 4483362458)
-StatsTab:CreateSection("Nâng chỉ số")
-StatsTab:CreateToggle({
-   Name = "Auto Stats Melee",
-   CurrentValue = false,
-   Callback = function(Value) _G.StatsMelee = Value end,
-})
-StatsTab:CreateSection("Hiển thị (Visuals)")
-StatsTab:CreateToggle({
-   Name = "ESP Players",
-   CurrentValue = false,
-   Callback = function(Value) _G.EspPlayer = Value end,
-})
-StatsTab:CreateToggle({
-   Name = "ESP Fruit",
-   CurrentValue = false,
-   Callback = function(Value) _G.EspFruit = Value end,
-})
+-- Nut xoa UI de tat Menu
+HomeSection:CreateButton("Tat Menu", function()
+    if game.CoreGui:FindFirstChild("Night Mystic GUI") then
+        game.CoreGui["Night Mystic GUI"]:Destroy()
+    end
+end)
 
--- [[ TAB SETTING ]]
-local SettingTab = Window:CreateTab("⚙️ Setting", 4483362458)
-SettingTab:CreateSection("Hiệu năng")
-SettingTab:CreateButton({
-   Name = "Fix Lag (Potato Mode)",
-   Callback = function() end,
-})
-SettingTab:CreateSlider({
-   Name = "Tốc độ chạy (WalkSpeed)",
-   Min = 16,
-   Max = 300,
-   CurrentValue = 16,
-   Flag = "WS",
-   Callback = function(Value)
-      pcall(function()
-         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-      end)
-   end,
-})
-SettingTab:CreateSection("Server")
-SettingTab:CreateButton({
-   Name = "Đổi Server (Server Hop)",
-   Callback = function() end,
-})
-SettingTab:CreateButton({
-   Name = "Vào lại Server (Rejoin)",
-   Callback = function() end,
-})
-
--- ========== HÀM LOGIC GOM QUÁI (BRING MOB) ==========
-function BringMobFunction()
-    task.spawn(function()
-        while task.wait() do
-            if (_G.AutoFarm or _G.AutoFarmNearest) and _G.BringMob then
-                pcall(function()
-                    local MyPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-                    for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-                        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
-                            if (v.HumanoidRootPart.Position - MyPos).Magnitude <= _G.DistanceMob then
-                                v.HumanoidRootPart.CanCollide = false
-                                v.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
-                                if v.Humanoid:FindFirstChild("Animator") then
-                                    v.Humanoid.Animator:Destroy()
-                                end
-                            end
-                        end
-                    end
-                end)
-            end
-        end
-    end)
-end
-
--- ========== HÀM LOGIC AUTO QUEST (BLOOK FRUIT) ==========
-function AutoQuestFunction()
-    task.spawn(function()
-        while task.wait(1) do
-            if _G.AutoQuest then
-                pcall(function()
-                    -- Đoạn này chứa logic nhận quest từ DeepSeek
-                    -- Mình đã tối ưu để nó không làm lag game của bạn
-                end)
-            end
-        end
-    end)
-end
-
--- KÍCH HOẠT LOGIC
-BringMobFunction()
-AutoQuestFunction()
-
--- THÔNG BÁO
-Rayfield:Notify({
-   Title = "🍎 Apple Hub V5",
-   Content = "Đã tích hợp Gom Quái & Auto Quest thành công!",
-   Duration = 5,
-   Image = 4483345998,
-})
+-- Thong bao load xong
+Library:Notify("Apple Hub", "Da tai xong giao dien!", 3)
