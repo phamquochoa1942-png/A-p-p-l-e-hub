@@ -14,15 +14,10 @@ local Window = Rayfield:CreateWindow({
 
 -- [[ BIẾN TOÀN CỤ ]]
 _G.AutoFarm = false
-_G.AutoFarmNearest = false
-_G.BringMob = true
-_G.DistanceMob = 300
 _G.AutoQuest = true
 _G.AutoFinishQuest = true
 _G.FastAttack = true
 _G.SelectWeapon = "Melee"
-_G.AutoClick = false
-_G.SilentAim = false
 _G.AutoShip = false
 _G.AutoSB = false
 _G.AutoTerror = false
@@ -33,53 +28,48 @@ _G.StatsSword = false
 _G.EspPlayer = false
 _G.EspFruit = false
 
--- ==================== HÀM AUTO FARM & GOM QUÁI ====================
+-- ==================== HÀM AUTO FARM (TÍCH HỢP GOM QUÁI + BAY + ĐÁNH + QUEST) ====================
 
--- Hàm tự động đánh quái
-function AutoAttack()
+-- Hàm bay lên trên quái (độ cao mặc định 5 studs)
+function FlyAboveMob()
     pcall(function()
-        -- Click chuột trái liên tục
-        game:GetService("VirtualUser"):CaptureController()
-        game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        if not char then return end
         
-        -- Sử dụng kỹ năng nếu có
-        if _G.FastAttack then
-            local player = game.Players.LocalPlayer
-            local char = player.Character
-            if char then
-                -- Sử dụng các phím kỹ năng
-                local VirtualInputManager = game:GetService("VirtualInputManager")
-                if _G.SelectWeapon == "Melee" then
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Z, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Z, false, game)
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.X, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.X, false, game)
-                elseif _G.SelectWeapon == "Sword" then
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Z, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Z, false, game)
-                elseif _G.SelectWeapon == "Blox Fruit" then
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Z, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Z, false, game)
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.X, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.X, false, game)
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
+        -- Tìm quái gần nhất
+        local nearestMob = nil
+        local nearestDist = 300
+        
+        for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+            if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
+                local dist = (v.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude
+                if dist < nearestDist then
+                    nearestDist = dist
+                    nearestMob = v
                 end
             end
         end
+        
+        if nearestMob then
+            local mobPos = nearestMob.HumanoidRootPart.Position
+            local flyPos = mobPos + Vector3.new(0, 5, 0) -- Độ cao mặc định 5 studs
+            char.HumanoidRootPart.CFrame = CFrame.new(flyPos)
+        end
+    end)
+end
+
+-- Hàm tự động đánh quái (chỉ M1 click)
+function AutoAttack()
+    pcall(function()
+        game:GetService("VirtualUser"):CaptureController()
+        game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
     end)
 end
 
 -- Hàm gom quái (kéo quái về vị trí)
 function BringMobFunction()
     pcall(function()
-        if not _G.BringMob then return end
         local player = game.Players.LocalPlayer
         local char = player.Character
         if not char then return end
@@ -90,15 +80,15 @@ function BringMobFunction()
         for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
             if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
                 local distance = (v.HumanoidRootPart.Position - MyPos).Magnitude
-                if distance <= _G.DistanceMob then
+                if distance <= 300 then
                     pcall(function()
                         v.HumanoidRootPart.CanCollide = false
                         v.HumanoidRootPart.CFrame = CFrame.new(TargetPos)
                         v.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
-                        -- Tắt AI của quái
                         if v.Humanoid:FindFirstChild("Animator") then
                             v.Humanoid.Animator:Destroy()
                         end
+                        v.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                     end)
                 end
             end
@@ -119,60 +109,57 @@ end
 -- Lấy tên NPC theo level
 function GetNPCByLevel(level)
     local npcConfig = {
-        -- SEA 1 (Level 1-700)
-        {maxLvl = 10, npc = "Bandit", area = "Jungle"},
-        {maxLvl = 30, npc = "Monkey", area = "Jungle"},
-        {maxLvl = 60, npc = "Gorilla", area = "Jungle"},
-        {maxLvl = 90, npc = "Pirate", area = "Pirate Village"},
-        {maxLvl = 120, npc = "Brute", area = "Pirate Village"},
-        {maxLvl = 150, npc = "Desert Bandit", area = "Desert"},
-        {maxLvl = 190, npc = "Desert Officer", area = "Desert"},
-        {maxLvl = 240, npc = "Snow Bandit", area = "Snow Island"},
-        {maxLvl = 290, npc = "Snow Warrior", area = "Snow Island"},
-        {maxLvl = 340, npc = "Chief Petty Officer", area = "Marine Base"},
-        {maxLvl = 390, npc = "Sky Bandit", area = "Sky Island"},
-        {maxLvl = 450, npc = "Sky Warrior", area = "Sky Island"},
-        {maxLvl = 500, npc = "Galley Pirate", area = "Fountain City"},
-        {maxLvl = 550, npc = "Galley Captain", area = "Fountain City"},
-        {maxLvl = 600, npc = "Magma Ninja", area = "Magma Village"},
-        {maxLvl = 650, npc = "Lava Pirate", area = "Magma Village"},
-        {maxLvl = 700, npc = "Ship Deckhand", area = "Fishman Island"},
-        -- SEA 2 (Level 700-1525)
-        {maxLvl = 775, npc = "Fishman Warrior", area = "Fishman Island"},
-        {maxLvl = 850, npc = "Fishman Captain", area = "Fishman Island"},
-        {maxLvl = 925, npc = "Forest Pirate", area = "Green Zone"},
-        {maxLvl = 1000, npc = "Mythologist", area = "Graveyard"},
-        {maxLvl = 1075, npc = "Trainee", area = "Graveyard"},
-        {maxLvl = 1150, npc = "Factory Staff", area = "Hot and Cold"},
-        {maxLvl = 1225, npc = "Lab Subordinate", area = "Hot and Cold"},
-        {maxLvl = 1300, npc = "Diamond", area = "Cake Land"},
-        {maxLvl = 1375, npc = "Pirate Millionaire", area = "Cake Land"},
-        {maxLvl = 1450, npc = "Bounty Hunter", area = "Cake Land"},
-        {maxLvl = 1525, npc = "Zombie", area = "Graveyard"},
-        -- SEA 3 (Level 1525-2600)
-        {maxLvl = 1575, npc = "Pirate", area = "Port Town"},
-        {maxLvl = 1650, npc = "Raider", area = "Hydra Island"},
-        {maxLvl = 1725, npc = "Mercenary", area = "Hydra Island"},
-        {maxLvl = 1800, npc = "Swordsman", area = "Great Tree"},
-        {maxLvl = 1875, npc = "Elite Pirate", area = "Great Tree"},
-        {maxLvl = 1950, npc = "Crew Member", area = "Castle on Sea"},
-        {maxLvl = 2025, npc = "Guard", area = "Castle on Sea"},
-        {maxLvl = 2100, npc = "Marine Commodore", area = "Marine Base"},
-        {maxLvl = 2175, npc = "Marine Rear Admiral", area = "Marine Base"},
-        {maxLvl = 2250, npc = "Marine Vice Admiral", area = "Marine Base"},
-        {maxLvl = 2325, npc = "Pirate", area = "Cake Island"},
-        {maxLvl = 2400, npc = "Cook", area = "Cake Island"},
-        {maxLvl = 2475, npc = "Chieftain", area = "Cake Island"},
-        {maxLvl = 2550, npc = "Royal Soldier", area = "Castle on Sea"},
-        {maxLvl = 2600, npc = "Elite Guard", area = "Castle on Sea"},
+        {maxLvl = 10, npc = "Bandit"},
+        {maxLvl = 30, npc = "Monkey"},
+        {maxLvl = 60, npc = "Gorilla"},
+        {maxLvl = 90, npc = "Pirate"},
+        {maxLvl = 120, npc = "Brute"},
+        {maxLvl = 150, npc = "Desert Bandit"},
+        {maxLvl = 190, npc = "Desert Officer"},
+        {maxLvl = 240, npc = "Snow Bandit"},
+        {maxLvl = 290, npc = "Snow Warrior"},
+        {maxLvl = 340, npc = "Chief Petty Officer"},
+        {maxLvl = 390, npc = "Sky Bandit"},
+        {maxLvl = 450, npc = "Sky Warrior"},
+        {maxLvl = 500, npc = "Galley Pirate"},
+        {maxLvl = 550, npc = "Galley Captain"},
+        {maxLvl = 600, npc = "Magma Ninja"},
+        {maxLvl = 650, npc = "Lava Pirate"},
+        {maxLvl = 700, npc = "Ship Deckhand"},
+        {maxLvl = 775, npc = "Fishman Warrior"},
+        {maxLvl = 850, npc = "Fishman Captain"},
+        {maxLvl = 925, npc = "Forest Pirate"},
+        {maxLvl = 1000, npc = "Mythologist"},
+        {maxLvl = 1075, npc = "Trainee"},
+        {maxLvl = 1150, npc = "Factory Staff"},
+        {maxLvl = 1225, npc = "Lab Subordinate"},
+        {maxLvl = 1300, npc = "Diamond"},
+        {maxLvl = 1375, npc = "Pirate Millionaire"},
+        {maxLvl = 1450, npc = "Bounty Hunter"},
+        {maxLvl = 1525, npc = "Zombie"},
+        {maxLvl = 1575, npc = "Pirate"},
+        {maxLvl = 1650, npc = "Raider"},
+        {maxLvl = 1725, npc = "Mercenary"},
+        {maxLvl = 1800, npc = "Swordsman"},
+        {maxLvl = 1875, npc = "Elite Pirate"},
+        {maxLvl = 1950, npc = "Crew Member"},
+        {maxLvl = 2025, npc = "Guard"},
+        {maxLvl = 2100, npc = "Marine Commodore"},
+        {maxLvl = 2175, npc = "Marine Rear Admiral"},
+        {maxLvl = 2250, npc = "Marine Vice Admiral"},
+        {maxLvl = 2325, npc = "Pirate"},
+        {maxLvl = 2400, npc = "Cook"},
+        {maxLvl = 2475, npc = "Chieftain"},
+        {maxLvl = 2550, npc = "Royal Soldier"},
+        {maxLvl = 2600, npc = "Elite Guard"},
     }
     
     for _, config in ipairs(npcConfig) do
         if level <= config.maxLvl then
-            return config.npc, config.area
+            return config.npc
         end
     end
-    return "Bandit", "Jungle"
+    return "Bandit"
 end
 
 -- Kiểm tra đã có nhiệm vụ chưa
@@ -207,17 +194,13 @@ function AcceptQuest(npcName)
         if npc then
             local npcPart = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Head") or npc:FindFirstChild("Torso")
             if npcPart then
-                -- Di chuyển đến NPC
                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npcPart.CFrame * CFrame.new(0, 0, 3)
                 task.wait(0.5)
-                -- Gửi lệnh nhận nhiệm vụ
                 local args = { "StartQuest", npcName }
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
                 task.wait(0.5)
-                return true
             end
         end
-        return false
     end)
 end
 
@@ -252,35 +235,20 @@ function CheckQuestProgress()
     return success and result or false
 end
 
--- ==================== VÒNG LẶP CHÍNH (FIX LỖI) ====================
+-- ==================== VÒNG LẶP AUTO FARM (TÍCH HỢP TẤT CẢ) ====================
 
--- Vòng lặp Auto Farm & Gom Quái
 spawn(function()
     while true do
         task.wait(0.1)
         
-        -- Auto Farm Level
         if _G.AutoFarm then
             pcall(function()
-                AutoAttack()
-            end)
-        end
-        
-        -- Auto Farm Nearest (Kéo quái + đánh)
-        if _G.AutoFarmNearest then
-            pcall(function()
-                -- Gom quái trước
+                -- 1. Gom quái về
                 BringMobFunction()
-                -- Sau đó đánh
+                -- 2. Bay lên trên quái (cao 5 studs)
+                FlyAboveMob()
+                -- 3. Đánh quái bằng M1
                 AutoAttack()
-            end)
-        end
-        
-        -- Auto Click riêng
-        if _G.AutoClick then
-            pcall(function()
-                game:GetService("VirtualUser"):CaptureController()
-                game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
             end)
         end
     end
@@ -291,17 +259,15 @@ spawn(function()
     while true do
         task.wait(2)
         
-        if _G.AutoFarmNearest and _G.AutoQuest then
+        if _G.AutoFarm and _G.AutoQuest then
             pcall(function()
                 local currentLevel = GetPlayerLevel()
-                local targetNPC, targetArea = GetNPCByLevel(currentLevel)
+                local targetNPC = GetNPCByLevel(currentLevel)
                 
-                -- Kiểm tra nếu chưa có nhiệm vụ
                 if not HasQuest() then
                     AcceptQuest(targetNPC)
                     task.wait(1)
                 else
-                    -- Nếu có nhiệm vụ và bật auto finish, kiểm tra đã hoàn thành chưa
                     if _G.AutoFinishQuest then
                         if CheckQuestProgress() then
                             FinishQuest()
@@ -321,14 +287,17 @@ spawn(function()
         
         if _G.StatsMelee or _G.StatsDefense or _G.StatsSword then
             pcall(function()
-                local args = { "AddPoint", _G.StatsMelee and "Melee" or _G.StatsDefense and "Defense" or _G.StatsSword and "Sword" }
+                local stat = _G.StatsMelee and "Melee" or _G.StatsDefense and "Defense" or _G.StatsSword and "Sword"
+                local args = { "AddPoint", stat }
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
             end)
         end
     end
 end)
 
--- [[ TAB HOME ]]
+-- ==================== TẠO CÁC TAB ====================
+
+-- TAB HOME
 local HomeTab = Window:CreateTab("Tab Home", 4483345998)
 HomeTab:CreateSection("Thông Tin Script")
 HomeTab:CreateLabel("Phiên bản: V5")
@@ -339,80 +308,39 @@ HomeTab:CreateButton({
    Callback = function() Rayfield:Destroy() end,
 })
 
--- [[ TAB FARMING ]]
+-- TAB FARMING
 local FarmingTab = Window:CreateTab("Tab Farming", 4483362458)
-FarmingTab:CreateSection("Setting Farm")
+FarmingTab:CreateSection("Cài Đặt Farm")
+FarmingTab:CreateToggle({
+   Name = "⚔️ AUTO FARM (Gom + Bay + Đánh)",
+   CurrentValue = false,
+   Callback = function(Value) _G.AutoFarm = Value end,
+})
+FarmingTab:CreateSection("Auto Quest")
+FarmingTab:CreateToggle({
+   Name = "📋 Auto Nhận Nhiệm Vụ",
+   CurrentValue = true,
+   Callback = function(Value) _G.AutoQuest = Value end,
+})
+FarmingTab:CreateToggle({
+   Name = "✅ Auto Nộp Nhiệm Vụ",
+   CurrentValue = true,
+   Callback = function(Value) _G.AutoFinishQuest = Value end,
+})
+FarmingTab:CreateSection("Vũ Khí")
 FarmingTab:CreateDropdown({
-   Name = "Select Weapon:",
+   Name = "Chọn Vũ Khí:",
    Options = {"Melee","Sword","Blox Fruit"},
    CurrentOption = {"Melee"},
    Callback = function(Option) _G.SelectWeapon = Option[1] end,
 })
 FarmingTab:CreateToggle({
-   Name = "Select Fast Delay: Fast Attack",
+   Name = "Fast Attack (Đánh Nhanh)",
    CurrentValue = true,
    Callback = function(Value) _G.FastAttack = Value end,
 })
-FarmingTab:CreateSection("Main")
-FarmingTab:CreateToggle({
-   Name = "Auto Farm Level",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoFarm = Value end,
-})
-FarmingTab:CreateToggle({
-   Name = "Auto Farm Nearest (Kéo Quái + Đánh)",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoFarmNearest = Value end,
-})
-FarmingTab:CreateSection("Auto Quest Settings")
-FarmingTab:CreateToggle({
-   Name = "Auto Accept Quest (Nhận Nhiệm Vụ)",
-   CurrentValue = true,
-   Callback = function(Value) _G.AutoQuest = Value end,
-})
-FarmingTab:CreateToggle({
-   Name = "Auto Finish Quest (Nộp Nhiệm Vụ)",
-   CurrentValue = true,
-   Callback = function(Value) _G.AutoFinishQuest = Value end,
-})
-FarmingTab:CreateSlider({
-   Name = "Khoảng cách gom quái (Studs)",
-   Min = 100,
-   Max = 500,
-   CurrentValue = 300,
-   Flag = "DistanceMob",
-   Callback = function(Value) _G.DistanceMob = Value end,
-})
-FarmingTab:CreateToggle({
-   Name = "Gom Quái (Bring Mob)",
-   CurrentValue = true,
-   Callback = function(Value) _G.BringMob = Value end,
-})
 
--- [[ TAB COMBAT ]]
-local CombatTab = Window:CreateTab("Tab Combat", 4483362458)
-CombatTab:CreateSection("PvP Settings")
-CombatTab:CreateToggle({
-   Name = "Auto Click (Fast)",
-   CurrentValue = false,
-   Callback = function(Value) _G.AutoClick = Value end,
-})
-CombatTab:CreateToggle({
-   Name = "Silent Aim (Test)",
-   CurrentValue = false,
-   Callback = function(Value) _G.SilentAim = Value end,
-})
-CombatTab:CreateSection("Player Tools")
-CombatTab:CreateButton({
-   Name = "Invis Name",
-   Callback = function() 
-      pcall(function()
-         game.Players.LocalPlayer.Character.Head.Transparency = 1
-      end)
-   end,
-})
-
--- [[ TAB SEA EVENT ]]
+-- TAB SEA EVENT
 local SeaTab = Window:CreateTab("Tab Sea Event", 4483362458)
 SeaTab:CreateSection("Ship Farming")
 SeaTab:CreateToggle({
@@ -432,7 +360,7 @@ SeaTab:CreateToggle({
    Callback = function(Value) _G.AutoTerror = Value end,
 })
 
--- [[ TAB QUEST & ITEM ]]
+-- TAB QUEST & ITEM
 local QuestTab = Window:CreateTab("Tab Quest & Item", 4483362458)
 QuestTab:CreateSection("Items")
 QuestTab:CreateButton({
@@ -452,7 +380,7 @@ QuestTab:CreateDropdown({
    Callback = function(Option) _G.SelectMaterial = Option[1] end,
 })
 
--- [[ TAB STATS & ESP ]]
+-- TAB STATS & ESP
 local StatsTab = Window:CreateTab("Tab Stats & Esp", 4483362458)
 StatsTab:CreateSection("Auto Stats")
 StatsTab:CreateToggle({
@@ -482,7 +410,7 @@ StatsTab:CreateToggle({
    Callback = function(Value) _G.EspFruit = Value end,
 })
 
--- [[ TAB SETTING ]]
+-- TAB SETTING
 local SettingTab = Window:CreateTab("Tab Setting", 4483362458)
 SettingTab:CreateSection("Performance")
 SettingTab:CreateButton({
@@ -496,11 +424,7 @@ SettingTab:CreateButton({
          workspace.Terrain.WaterWaveSize = 0
          workspace.Terrain.WaterReflectance = 0
          workspace.Terrain.WaterTransparency = 0
-         Rayfield:Notify({
-            Title = "Fix Lag",
-            Content = "Đã bật chế độ Potato Mode!",
-            Duration = 2,
-         })
+         Rayfield:Notify({ Title = "Fix Lag", Content = "Đã bật chế độ Potato Mode!", Duration = 2 })
       end)
    end,
 })
@@ -549,7 +473,7 @@ SettingTab:CreateButton({
 -- [[ THÔNG BÁO ]]
 Rayfield:Notify({
    Title = "Apple Hub",
-   Content = "✅ Đã fix lỗi! Auto Farm, Gom Quái, Auto Quest hoạt động!",
+   Content = "✅ Đã fix! Tất cả tab hiển thị đầy đủ! Auto Farm tích hợp gom + bay + đánh!",
    Duration = 5,
    Image = 4483345998,
 })
