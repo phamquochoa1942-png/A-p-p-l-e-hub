@@ -1,35 +1,33 @@
--- Khoi tao thu vien tu link cua ban
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/phamquochoa1942-png/Chu-i-hub/refs/heads/main/Apple%20v5"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/phamquochoa1942-png/A-p-p-l-e-hub/refs/heads/main/Apple%20v5"))()
 
--- Khoi tao cua so Menu
 local Window = Library:CreateWindow("Apple Hub V5", "by Quoc Hoa", "rbxassetid://105245380363493")
 
--- Tao cac Tab (Page)
-local MainTab = Window:CreatePage("Home")
+local HomeTab = Window:CreatePage("Home")
 local FarmTab = Window:CreatePage("Farming")
 
--- Tao Section va cac chuc nang trong Tab Home
-local HomeSection = MainTab:CreateSection("Thong tin")
+local HomeSec = HomeTab:CreateSection("Information")
+HomeSec:CreateLabel("Welcome to Apple Hub")
 
-HomeSection:CreateLabel("Chao mung den voi Apple Hub")
-
-HomeSection:CreateButton("Bat Thong Bao", function()
-    Library:Notify("Apple Hub", "UI da chay thanh cong!", 5)
+HomeSec:CreateButton("Test Notify", function()
+    Library:Notify("Apple Hub", "UI Working!", 5)
 end)
 
--- Tao Section va chuc nang trong Tab Farming
-local FarmSection = FarmTab:CreateSection("Auto Farm")
+local FarmSec = FarmTab:CreateSection("Main Farm")
 
-FarmSection:CreateToggle("Auto Farm Level", false, function(Value)
+FarmSec:CreateToggle("Auto Farm Level", false, function(Value)
     _G.AutoFarm = Value
 end)
 
--- Nut xoa UI de tat Menu
-HomeSection:CreateButton("Tat Menu", function()
+FarmSec:CreateSlider("WalkSpeed", 16, 500, 16, function(Value)
+    pcall(function()
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end)
+end)
+
+HomeSec:CreateButton("Destroy UI", function()
     if game.CoreGui:FindFirstChild("Night Mystic GUI") then
         game.CoreGui["Night Mystic GUI"]:Destroy()
     end
 end)
 
--- Thong bao load xong
-Library:Notify("Apple Hub", "Da tai xong giao dien!", 3)
+Library:Notify("Apple Hub", "Loaded!", 3)
