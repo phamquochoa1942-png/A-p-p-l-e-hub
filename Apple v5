@@ -16,7 +16,7 @@ local Window = Rayfield:CreateWindow({
 _G.AutoFarm = false
 _G.AutoQuest = true
 _G.AutoFinishQuest = true
-_G.AutoHaki = true -- Tự động bật Haki
+_G.AutoHaki = true
 _G.SelectWeapon = "Melee"
 _G.AutoShip = false
 _G.AutoSB = false
@@ -27,29 +27,24 @@ _G.StatsDefense = false
 _G.StatsSword = false
 _G.EspPlayer = false
 _G.EspFruit = false
-_G.IsDoingQuest = false -- Biến kiểm soát đang làm quest
+_G.IsDoingQuest = false
 
--- ==================== HÀM AUTO HAKI ====================
-
--- Hàm tự động bật Haki
-function AutoHaki()
+-- ==================== HÀM BẬT HAKI ====================
+function EnableHaki()
     pcall(function()
         if _G.AutoHaki and not _G.IsDoingQuest then
-            -- Kiểm tra xem đã có Haki chưa
-            local player = game.Players.LocalPlayer
-            local char = player.Character
-            if char then
-                -- Bật Haki nếu chưa bật
-                local args = { "Bus", true }
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-            end
+            local args = { "Bus", true }
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+            wait(0.3)
+            local args2 = { "Buso", true }
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args2))
         end
     end)
 end
 
 -- ==================== HÀM AUTO FARM ====================
 
--- Hàm bay lên trên quái (độ cao 15 studs)
+-- Hàm bay lên trên quái
 function FlyAboveMob()
     pcall(function()
         if _G.IsDoingQuest then return end
@@ -80,16 +75,18 @@ function FlyAboveMob()
     end)
 end
 
--- Hàm tự động đánh quái (M1 click)
+-- Hàm tự động đánh quái (AUTO ATTACK - không cần click)
 function AutoAttack()
     pcall(function()
         if _G.IsDoingQuest then return end
         
+        -- Gửi lệnh tấn công liên tục qua Remote
+        local args = { "Attack" }
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+        
+        -- Cách 2: Dùng VirtualUser để click ảo
         local VirtualUser = game:GetService("VirtualUser")
         VirtualUser:CaptureController()
-        
-        VirtualUser:ClickButton1(Vector2.new(50, 50))
-        task.wait(0.05)
         VirtualUser:ClickButton1(Vector2.new(50, 50))
     end)
 end
@@ -200,18 +197,11 @@ function HasQuest()
         local args = { "GetQuest" }
         local questData = game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
         
-        if type(questData) == "table" and #questData > 0 then
-            return true
-        end
-        
-        if type(questData) == "string" and questData ~= "" and questData ~= "none" then
-            return true
-        end
-        
-        local playerGui = game.Players.LocalPlayer.PlayerGui
-        if playerGui:FindFirstChild("Quest") then
-            local questFrame = playerGui.Quest:FindFirstChild("Frame")
-            if questFrame and questFrame.Visible then
+        if questData and questData ~= nil and questData ~= "" and questData ~= "none" then
+            if type(questData) == "table" and #questData > 0 then
+                return true
+            end
+            if type(questData) == "string" and questData ~= "" then
                 return true
             end
         end
@@ -223,12 +213,7 @@ end
 -- Tìm NPC trong Workspace
 function FindNPC(npcName)
     for _, v in pairs(game:GetService("Workspace"):GetDescendants()) do
-        if v:IsA("Model") and v.Name:lower() == npcName:lower() then
-            return v
-        end
-    end
-    for _, v in pairs(game:GetService("Workspace"):GetDescendants()) do
-        if v:IsA("Model") and v.Name:lower():find(npcName:lower()) then
+        if v:IsA("Model") and (v.Name:lower() == npcName:lower() or v.Name:lower():find(npcName:lower())) then
             return v
         end
     end
@@ -294,27 +279,30 @@ end
 
 -- ==================== VÒNG LẶP CHÍNH ====================
 
--- Vòng lặp Auto Haki
+-- Vòng lặp bật Haki
 spawn(function()
     while true do
-        task.wait(5) -- Mỗi 5 giây kiểm tra bật Haki 1 lần
+        task.wait(3)
         if _G.AutoFarm and _G.AutoHaki then
             pcall(function()
-                AutoHaki()
+                EnableHaki()
             end)
         end
     end
 end)
 
--- Vòng lặp Auto Farm
+-- Vòng lặp Auto Farm (tự động đánh liên tục)
 spawn(function()
     while true do
-        task.wait(0.05)
+        task.wait(0.1)
         
         if _G.AutoFarm and not _G.IsDoingQuest then
             pcall(function()
+                -- Gom quái
                 BringMobFunction()
+                -- Bay lên quái
                 FlyAboveMob()
+                -- Tự động đánh (không cần click)
                 AutoAttack()
             end)
         end
@@ -367,7 +355,7 @@ end)
 
 -- ==================== TẠO CÁC TAB ====================
 
--- TAB HOME (Đã bỏ các dòng không cần thiết)
+-- TAB HOME
 local HomeTab = Window:CreateTab("Tab Home", 4483345998)
 HomeTab:CreateSection("Thông Tin Script")
 HomeTab:CreateLabel("Phiên bản: V5")
@@ -381,7 +369,7 @@ HomeTab:CreateButton({
 local FarmingTab = Window:CreateTab("Tab Farming", 4483362458)
 FarmingTab:CreateSection("Cài Đặt Farm")
 FarmingTab:CreateToggle({
-   Name = "⚔️ AUTO FARM (Gom + Bay 15s + Đánh M1)",
+   Name = "⚔️ AUTO FARM (Gom + Bay + Auto Attack)",
    CurrentValue = false,
    Callback = function(Value) _G.AutoFarm = Value end,
 })
@@ -542,7 +530,7 @@ SettingTab:CreateButton({
 -- [[ THÔNG BÁO ]]
 Rayfield:Notify({
    Title = "Apple Hub",
-   Content = "✅ Đã thêm Auto Haki! Tab Home đã được làm gọn!",
+   Content = "✅ Auto Attack tự động đánh, không cần click!",
    Duration = 5,
    Image = 4483345998,
 })
