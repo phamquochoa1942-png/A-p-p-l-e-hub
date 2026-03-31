@@ -120,7 +120,7 @@ function BringMobFunction()
     end)
 end
 
--- ==================== HÀM AUTO QUEST (TỰ ĐỘNG HOÀN TOÀN) ====================
+-- ==================== HÀM AUTO QUEST (FIX TÊN NPC) ====================
 
 -- Lấy level hiện tại
 function GetPlayerLevel()
@@ -130,52 +130,54 @@ function GetPlayerLevel()
     return success and lvl or 1
 end
 
--- Lấy tên NPC theo level
+-- Lấy tên NPC theo level (FIX: Đúng tên NPC trong game)
 function GetNPCByLevel(level)
+    -- Tên NPC chính xác trong Blox Fruits
     local npcConfig = {
-        {maxLvl = 10, npc = "Bandit"},
-        {maxLvl = 30, npc = "Monkey"},
-        {maxLvl = 60, npc = "Gorilla"},
-        {maxLvl = 90, npc = "Pirate"},
-        {maxLvl = 120, npc = "Brute"},
-        {maxLvl = 150, npc = "Desert Bandit"},
-        {maxLvl = 190, npc = "Desert Officer"},
-        {maxLvl = 240, npc = "Snow Bandit"},
-        {maxLvl = 290, npc = "Snow Warrior"},
-        {maxLvl = 340, npc = "Chief Petty Officer"},
-        {maxLvl = 390, npc = "Sky Bandit"},
-        {maxLvl = 450, npc = "Sky Warrior"},
-        {maxLvl = 500, npc = "Galley Pirate"},
-        {maxLvl = 550, npc = "Galley Captain"},
-        {maxLvl = 600, npc = "Magma Ninja"},
-        {maxLvl = 650, npc = "Lava Pirate"},
-        {maxLvl = 700, npc = "Ship Deckhand"},
-        {maxLvl = 775, npc = "Fishman Warrior"},
-        {maxLvl = 850, npc = "Fishman Captain"},
-        {maxLvl = 925, npc = "Forest Pirate"},
-        {maxLvl = 1000, npc = "Mythologist"},
-        {maxLvl = 1075, npc = "Trainee"},
-        {maxLvl = 1150, npc = "Factory Staff"},
-        {maxLvl = 1225, npc = "Lab Subordinate"},
-        {maxLvl = 1300, npc = "Diamond"},
-        {maxLvl = 1375, npc = "Pirate Millionaire"},
-        {maxLvl = 1450, npc = "Bounty Hunter"},
-        {maxLvl = 1525, npc = "Zombie"},
-        {maxLvl = 1575, npc = "Pirate"},
-        {maxLvl = 1650, npc = "Raider"},
-        {maxLvl = 1725, npc = "Mercenary"},
-        {maxLvl = 1800, npc = "Swordsman"},
-        {maxLvl = 1875, npc = "Elite Pirate"},
-        {maxLvl = 1950, npc = "Crew Member"},
-        {maxLvl = 2025, npc = "Guard"},
-        {maxLvl = 2100, npc = "Marine Commodore"},
-        {maxLvl = 2175, npc = "Marine Rear Admiral"},
-        {maxLvl = 2250, npc = "Marine Vice Admiral"},
-        {maxLvl = 2325, npc = "Pirate"},
-        {maxLvl = 2400, npc = "Cook"},
-        {maxLvl = 2475, npc = "Chieftain"},
-        {maxLvl = 2550, npc = "Royal Soldier"},
-        {maxLvl = 2600, npc = "Elite Guard"},
+        {maxLvl = 5, npc = "Bandit Quest Giver"},  -- Level 1-5
+        {maxLvl = 10, npc = "Bandit Quest Giver"},
+        {maxLvl = 30, npc = "Monkey Quest Giver"},
+        {maxLvl = 60, npc = "Gorilla Quest Giver"},
+        {maxLvl = 90, npc = "Pirate Quest Giver"},
+        {maxLvl = 120, npc = "Brute Quest Giver"},
+        {maxLvl = 150, npc = "Desert Bandit Quest Giver"},
+        {maxLvl = 190, npc = "Desert Officer Quest Giver"},
+        {maxLvl = 240, npc = "Snow Bandit Quest Giver"},
+        {maxLvl = 290, npc = "Snow Warrior Quest Giver"},
+        {maxLvl = 340, npc = "Chief Petty Officer Quest Giver"},
+        {maxLvl = 390, npc = "Sky Bandit Quest Giver"},
+        {maxLvl = 450, npc = "Sky Warrior Quest Giver"},
+        {maxLvl = 500, npc = "Galley Pirate Quest Giver"},
+        {maxLvl = 550, npc = "Galley Captain Quest Giver"},
+        {maxLvl = 600, npc = "Magma Ninja Quest Giver"},
+        {maxLvl = 650, npc = "Lava Pirate Quest Giver"},
+        {maxLvl = 700, npc = "Ship Deckhand Quest Giver"},
+        {maxLvl = 775, npc = "Fishman Warrior Quest Giver"},
+        {maxLvl = 850, npc = "Fishman Captain Quest Giver"},
+        {maxLvl = 925, npc = "Forest Pirate Quest Giver"},
+        {maxLvl = 1000, npc = "Mythologist Quest Giver"},
+        {maxLvl = 1075, npc = "Trainee Quest Giver"},
+        {maxLvl = 1150, npc = "Factory Staff Quest Giver"},
+        {maxLvl = 1225, npc = "Lab Subordinate Quest Giver"},
+        {maxLvl = 1300, npc = "Diamond Quest Giver"},
+        {maxLvl = 1375, npc = "Pirate Millionaire Quest Giver"},
+        {maxLvl = 1450, npc = "Bounty Hunter Quest Giver"},
+        {maxLvl = 1525, npc = "Zombie Quest Giver"},
+        {maxLvl = 1575, npc = "Pirate Quest Giver"},
+        {maxLvl = 1650, npc = "Raider Quest Giver"},
+        {maxLvl = 1725, npc = "Mercenary Quest Giver"},
+        {maxLvl = 1800, npc = "Swordsman Quest Giver"},
+        {maxLvl = 1875, npc = "Elite Pirate Quest Giver"},
+        {maxLvl = 1950, npc = "Crew Member Quest Giver"},
+        {maxLvl = 2025, npc = "Guard Quest Giver"},
+        {maxLvl = 2100, npc = "Marine Commodore Quest Giver"},
+        {maxLvl = 2175, npc = "Marine Rear Admiral Quest Giver"},
+        {maxLvl = 2250, npc = "Marine Vice Admiral Quest Giver"},
+        {maxLvl = 2325, npc = "Pirate Quest Giver"},
+        {maxLvl = 2400, npc = "Cook Quest Giver"},
+        {maxLvl = 2475, npc = "Chieftain Quest Giver"},
+        {maxLvl = 2550, npc = "Royal Soldier Quest Giver"},
+        {maxLvl = 2600, npc = "Elite Guard Quest Giver"},
     }
     
     for _, config in ipairs(npcConfig) do
@@ -183,7 +185,7 @@ function GetNPCByLevel(level)
             return config.npc
         end
     end
-    return "Bandit"
+    return "Bandit Quest Giver"
 end
 
 -- Kiểm tra đã có nhiệm vụ chưa
@@ -205,17 +207,24 @@ function HasQuest()
     return success and result or false
 end
 
--- Tìm NPC trong Workspace
+-- Tìm NPC trong Workspace (tìm theo tên chính xác)
 function FindNPC(npcName)
+    -- Tìm chính xác tên
     for _, v in pairs(game:GetService("Workspace"):GetDescendants()) do
-        if v:IsA("Model") and (v.Name:lower() == npcName:lower() or v.Name:lower():find(npcName:lower())) then
+        if v:IsA("Model") and v.Name == npcName then
+            return v
+        end
+    end
+    -- Tìm gần đúng
+    for _, v in pairs(game:GetService("Workspace"):GetDescendants()) do
+        if v:IsA("Model") and v.Name:lower():find(npcName:lower()) then
             return v
         end
     end
     return nil
 end
 
--- Nhận nhiệm vụ (tự động, không cần nhấn phím)
+-- Nhận nhiệm vụ
 function AcceptQuest(npcName)
     pcall(function()
         local npc = FindNPC(npcName)
@@ -235,7 +244,7 @@ function AcceptQuest(npcName)
                     task.wait(1)
                 end
                 
-                -- Gửi lệnh nhận nhiệm vụ trực tiếp (không cần nhấn phím)
+                -- Gửi lệnh nhận nhiệm vụ
                 local args = { "StartQuest", npcName }
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
                 task.wait(1)
@@ -251,21 +260,18 @@ function AcceptQuest(npcName)
     end)
 end
 
--- Nộp nhiệm vụ (tự động, không cần nhấn phím)
+-- Nộp nhiệm vụ
 function FinishQuest()
     pcall(function()
         _G.IsDoingQuest = true
         
-        -- Tạm dừng auto farm
         local wasFarming = _G.AutoFarm
         _G.AutoFarm = false
         
-        -- Gửi lệnh nộp nhiệm vụ trực tiếp
         local args = { "FinishQuest" }
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
         task.wait(1)
         
-        -- Khôi phục auto farm
         _G.AutoFarm = wasFarming
         _G.IsDoingQuest = false
     end)
@@ -316,7 +322,7 @@ spawn(function()
     end
 end)
 
--- Vòng lặp Auto Quest (tự động, không cần tương tác)
+-- Vòng lặp Auto Quest
 spawn(function()
     while true do
         task.wait(2)
@@ -385,7 +391,7 @@ FarmingTab:CreateToggle({
    CurrentValue = true,
    Callback = function(Value) _G.AutoHaki = Value end,
 })
-FarmingTab:CreateSection("Auto Quest (Tự Động - Không Cần Đụng)")
+FarmingTab:CreateSection("Auto Quest")
 FarmingTab:CreateToggle({
    Name = "📋 Auto Nhận Nhiệm Vụ",
    CurrentValue = true,
@@ -537,7 +543,7 @@ SettingTab:CreateButton({
 -- [[ THÔNG BÁO ]]
 Rayfield:Notify({
    Title = "Apple Hub",
-   Content = "✅ Auto Quest tự động nhận/nộp, không cần đụng phím!",
+   Content = "✅ Đã sửa tên NPC thành 'Bandit Quest Giver'!",
    Duration = 5,
    Image = 4483345998,
 })
