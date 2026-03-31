@@ -75,16 +75,11 @@ function FlyAboveMob()
     end)
 end
 
--- Hàm tự động đánh quái (AUTO ATTACK - không cần click)
+-- Hàm tự động đánh quái
 function AutoAttack()
     pcall(function()
         if _G.IsDoingQuest then return end
         
-        -- Gửi lệnh tấn công liên tục qua Remote
-        local args = { "Attack" }
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-        
-        -- Cách 2: Dùng VirtualUser để click ảo
         local VirtualUser = game:GetService("VirtualUser")
         VirtualUser:CaptureController()
         VirtualUser:ClickButton1(Vector2.new(50, 50))
@@ -125,7 +120,7 @@ function BringMobFunction()
     end)
 end
 
--- ==================== HÀM AUTO QUEST ====================
+-- ==================== HÀM AUTO QUEST (TỰ ĐỘNG HOÀN TOÀN) ====================
 
 -- Lấy level hiện tại
 function GetPlayerLevel()
@@ -201,7 +196,7 @@ function HasQuest()
             if type(questData) == "table" and #questData > 0 then
                 return true
             end
-            if type(questData) == "string" and questData ~= "" then
+            if type(questData) == "string" and questData ~= "" and questData ~= "0" then
                 return true
             end
         end
@@ -220,7 +215,7 @@ function FindNPC(npcName)
     return nil
 end
 
--- Nhận nhiệm vụ
+-- Nhận nhiệm vụ (tự động, không cần nhấn phím)
 function AcceptQuest(npcName)
     pcall(function()
         local npc = FindNPC(npcName)
@@ -229,16 +224,24 @@ function AcceptQuest(npcName)
             if npcPart then
                 _G.IsDoingQuest = true
                 
+                -- Tạm dừng auto farm
+                local wasFarming = _G.AutoFarm
+                _G.AutoFarm = false
+                
+                -- Di chuyển đến NPC
                 local char = game.Players.LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     char.HumanoidRootPart.CFrame = npcPart.CFrame * CFrame.new(0, 0, 3)
                     task.wait(1)
                 end
                 
+                -- Gửi lệnh nhận nhiệm vụ trực tiếp (không cần nhấn phím)
                 local args = { "StartQuest", npcName }
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
                 task.wait(1)
                 
+                -- Khôi phục auto farm
+                _G.AutoFarm = wasFarming
                 _G.IsDoingQuest = false
                 return true
             end
@@ -248,15 +251,22 @@ function AcceptQuest(npcName)
     end)
 end
 
--- Nộp nhiệm vụ
+-- Nộp nhiệm vụ (tự động, không cần nhấn phím)
 function FinishQuest()
     pcall(function()
         _G.IsDoingQuest = true
         
+        -- Tạm dừng auto farm
+        local wasFarming = _G.AutoFarm
+        _G.AutoFarm = false
+        
+        -- Gửi lệnh nộp nhiệm vụ trực tiếp
         local args = { "FinishQuest" }
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
         task.wait(1)
         
+        -- Khôi phục auto farm
+        _G.AutoFarm = wasFarming
         _G.IsDoingQuest = false
     end)
 end
@@ -291,30 +301,27 @@ spawn(function()
     end
 end)
 
--- Vòng lặp Auto Farm (tự động đánh liên tục)
+-- Vòng lặp Auto Farm
 spawn(function()
     while true do
         task.wait(0.1)
         
         if _G.AutoFarm and not _G.IsDoingQuest then
             pcall(function()
-                -- Gom quái
                 BringMobFunction()
-                -- Bay lên quái
                 FlyAboveMob()
-                -- Tự động đánh (không cần click)
                 AutoAttack()
             end)
         end
     end
 end)
 
--- Vòng lặp Auto Quest
+-- Vòng lặp Auto Quest (tự động, không cần tương tác)
 spawn(function()
     while true do
         task.wait(2)
         
-        if _G.AutoFarm and _G.AutoQuest then
+        if _G.AutoFarm and _G.AutoQuest and not _G.IsDoingQuest then
             pcall(function()
                 local currentLevel = GetPlayerLevel()
                 local targetNPC = GetNPCByLevel(currentLevel)
@@ -378,7 +385,7 @@ FarmingTab:CreateToggle({
    CurrentValue = true,
    Callback = function(Value) _G.AutoHaki = Value end,
 })
-FarmingTab:CreateSection("Auto Quest")
+FarmingTab:CreateSection("Auto Quest (Tự Động - Không Cần Đụng)")
 FarmingTab:CreateToggle({
    Name = "📋 Auto Nhận Nhiệm Vụ",
    CurrentValue = true,
@@ -530,7 +537,7 @@ SettingTab:CreateButton({
 -- [[ THÔNG BÁO ]]
 Rayfield:Notify({
    Title = "Apple Hub",
-   Content = "✅ Auto Attack tự động đánh, không cần click!",
+   Content = "✅ Auto Quest tự động nhận/nộp, không cần đụng phím!",
    Duration = 5,
    Image = 4483345998,
 })
