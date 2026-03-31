@@ -16,7 +16,7 @@ local Window = Rayfield:CreateWindow({
 _G.AutoFarm = false
 _G.AutoQuest = true
 _G.AutoFinishQuest = true
-_G.FastAttack = true
+_G.AutoClick = true
 _G.SelectWeapon = "Melee"
 _G.AutoShip = false
 _G.AutoSB = false
@@ -30,7 +30,7 @@ _G.EspFruit = false
 
 -- ==================== HÀM AUTO FARM ====================
 
--- Hàm bay lên trên quái (độ cao 10 studs)
+-- Hàm bay lên trên quái (độ cao 15 studs)
 function FlyAboveMob()
     pcall(function()
         local player = game.Players.LocalPlayer
@@ -39,7 +39,7 @@ function FlyAboveMob()
         if not char:FindFirstChild("HumanoidRootPart") then return end
         
         local nearestMob = nil
-        local nearestDist = 300
+        local nearestDist = 400
         
         for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
             if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
@@ -53,23 +53,31 @@ function FlyAboveMob()
         
         if nearestMob and nearestMob:FindFirstChild("HumanoidRootPart") then
             local mobPos = nearestMob.HumanoidRootPart.Position
-            local flyPos = mobPos + Vector3.new(0, 10, 0) -- Độ cao 10 studs
+            local flyPos = mobPos + Vector3.new(0, 15, 0) -- Độ cao 15 studs
             char.HumanoidRootPart.CFrame = CFrame.new(flyPos)
         end
     end)
 end
 
--- Hàm tự động đánh quái (chỉ M1 click) - ĐÃ FIX
+-- Hàm tự động đánh quái (M1 click) - FIX TRIỆT ĐỂ
 function AutoAttack()
     pcall(function()
         -- Click chuột trái liên tục
         local VirtualUser = game:GetService("VirtualUser")
         VirtualUser:CaptureController()
+        
+        -- Click 3 lần liên tiếp để đảm bảo
+        VirtualUser:ClickButton1(Vector2.new(50, 50))
+        task.wait(0.03)
+        VirtualUser:ClickButton1(Vector2.new(50, 50))
+        task.wait(0.03)
         VirtualUser:ClickButton1(Vector2.new(50, 50))
         
-        -- Đảm bảo click liên tục
-        task.wait(0.05)
-        VirtualUser:ClickButton1(Vector2.new(50, 50))
+        -- Gửi sự kiện click qua InputService
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+        VirtualInputManager:SendMouseButtonEvent(true, 0, 0, 0, false, game, 0)
+        task.wait(0.03)
+        VirtualInputManager:SendMouseButtonEvent(false, 0, 0, 0, false, game, 0)
     end)
 end
 
@@ -87,7 +95,7 @@ function BringMobFunction()
         for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
             if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
                 local distance = (v.HumanoidRootPart.Position - MyPos).Magnitude
-                if distance <= 300 then
+                if distance <= 350 then
                     pcall(function()
                         v.HumanoidRootPart.CanCollide = false
                         v.HumanoidRootPart.CFrame = CFrame.new(TargetPos)
@@ -96,6 +104,8 @@ function BringMobFunction()
                             v.Humanoid.Animator:Destroy()
                         end
                         v.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                        v.Humanoid.JumpPower = 0
+                        v.Humanoid.WalkSpeed = 0
                     end)
                 end
             end
@@ -103,7 +113,7 @@ function BringMobFunction()
     end)
 end
 
--- ==================== HÀM AUTO QUEST (ĐÃ FIX) ====================
+-- ==================== HÀM AUTO QUEST (FIX TRIỆT ĐỂ) ====================
 
 -- Lấy level hiện tại
 function GetPlayerLevel()
@@ -169,13 +179,20 @@ function GetNPCByLevel(level)
     return "Bandit"
 end
 
--- Kiểm tra đã có nhiệm vụ chưa
+-- Kiểm tra đã có nhiệm vụ chưa - FIX
 function HasQuest()
     local success, result = pcall(function()
-        -- Kiểm tra qua Remote
+        -- Lấy thông tin quest trực tiếp
         local args = { "GetQuest" }
         local questData = game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-        if questData and questData ~= "" and questData ~= "none" and questData ~= nil then
+        
+        -- Nếu questData là table và có dữ liệu
+        if type(questData) == "table" and #questData > 0 then
+            return true
+        end
+        
+        -- Nếu questData là string và không rỗng
+        if type(questData) == "string" and questData ~= "" and questData ~= "none" then
             return true
         end
         
@@ -207,24 +224,31 @@ function FindNPC(npcName)
     return nil
 end
 
--- Di chuyển đến NPC và nhận nhiệm vụ
+-- Di chuyển đến NPC và nhận nhiệm vụ - FIX
 function AcceptQuest(npcName)
     pcall(function()
         local npc = FindNPC(npcName)
         if npc then
             local npcPart = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Head") or npc:FindFirstChild("Torso")
             if npcPart then
+                -- Tạm dừng auto farm khi đi nhận quest
+                local wasFarming = _G.AutoFarm
+                _G.AutoFarm = false
+                
                 -- Di chuyển đến NPC
                 local char = game.Players.LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     char.HumanoidRootPart.CFrame = npcPart.CFrame * CFrame.new(0, 0, 3)
-                    task.wait(0.8)
+                    task.wait(1)
                 end
                 
                 -- Gửi lệnh nhận nhiệm vụ
                 local args = { "StartQuest", npcName }
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-                task.wait(0.8)
+                task.wait(1)
+                
+                -- Khôi phục auto farm
+                _G.AutoFarm = wasFarming
                 return true
             end
         end
@@ -232,44 +256,36 @@ function AcceptQuest(npcName)
     end)
 end
 
--- Nộp nhiệm vụ
+-- Nộp nhiệm vụ - FIX
 function FinishQuest()
     pcall(function()
+        -- Tạm dừng auto farm khi nộp quest
+        local wasFarming = _G.AutoFarm
+        _G.AutoFarm = false
+        
         local args = { "FinishQuest" }
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-        task.wait(0.8)
+        task.wait(1)
+        
+        -- Khôi phục auto farm
+        _G.AutoFarm = wasFarming
     end)
 end
 
--- Kiểm tra tiến độ nhiệm vụ
+-- Kiểm tra tiến độ nhiệm vụ - FIX
 function CheckQuestProgress()
     local success, result = pcall(function()
         -- Lấy thông tin quest từ Remote
         local args = { "GetQuest" }
         local questData = game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
         
-        if questData and type(questData) == "table" then
-            local current = questData[1] or 0
-            local required = questData[2] or 0
+        -- Nếu questData là table
+        if type(questData) == "table" and #questData >= 2 then
+            local current = tonumber(questData[1]) or 0
+            local required = tonumber(questData[2]) or 0
             return current >= required
         end
         
-        -- Kiểm tra qua GUI
-        local playerGui = game.Players.LocalPlayer.PlayerGui
-        local questGui = playerGui:FindFirstChild("Quest")
-        if questGui then
-            local frame = questGui:FindFirstChild("Frame")
-            if frame then
-                for _, v in pairs(frame:GetDescendants()) do
-                    if v:IsA("TextLabel") and v.Text then
-                        local current, total = v.Text:match("(%d+)/(%d+)")
-                        if current and total then
-                            return tonumber(current) >= tonumber(total)
-                        end
-                    end
-                end
-            end
-        end
         return false
     end)
     return success and result or false
@@ -277,10 +293,10 @@ end
 
 -- ==================== VÒNG LẶP CHÍNH ====================
 
--- Vòng lặp Auto Farm (gom + bay + đánh)
+-- Vòng lặp Auto Farm (gom + bay + đánh) - FIX
 spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.05)
         
         if _G.AutoFarm then
             pcall(function()
@@ -290,18 +306,15 @@ spawn(function()
                 FlyAboveMob()
                 -- Đánh M1 liên tục
                 AutoAttack()
-                -- Đánh thêm lần nữa để đảm bảo
-                task.wait(0.05)
-                AutoAttack()
             end)
         end
     end
 end)
 
--- Vòng lặp Auto Quest (chạy riêng)
+-- Vòng lặp Auto Quest (chạy riêng) - FIX
 spawn(function()
     while true do
-        task.wait(3)
+        task.wait(2)
         
         if _G.AutoFarm and _G.AutoQuest then
             pcall(function()
@@ -353,7 +366,8 @@ HomeTab:CreateSection("Thông Tin Script")
 HomeTab:CreateLabel("Phiên bản: V5")
 HomeTab:CreateLabel("Người phát triển: Quoc Hoa")
 HomeTab:CreateLabel("Max Level Support: 2600")
-HomeTab:CreateLabel("Bay cao: 10 studs")
+HomeTab:CreateLabel("Bay cao: 15 studs")
+HomeTab:CreateLabel("Auto Click: M1")
 HomeTab:CreateButton({
    Name = "Xóa UI (Destroy UI)",
    Callback = function() Rayfield:Destroy() end,
@@ -363,7 +377,7 @@ HomeTab:CreateButton({
 local FarmingTab = Window:CreateTab("Tab Farming", 4483362458)
 FarmingTab:CreateSection("Cài Đặt Farm")
 FarmingTab:CreateToggle({
-   Name = "⚔️ AUTO FARM (Gom + Bay 10s + Đánh M1)",
+   Name = "⚔️ AUTO FARM (Gom + Bay 15s + Đánh M1)",
    CurrentValue = false,
    Callback = function(Value) _G.AutoFarm = Value end,
 })
@@ -384,11 +398,6 @@ FarmingTab:CreateDropdown({
    Options = {"Melee","Sword","Blox Fruit"},
    CurrentOption = {"Melee"},
    Callback = function(Option) _G.SelectWeapon = Option[1] end,
-})
-FarmingTab:CreateToggle({
-   Name = "Fast Attack (Đánh Nhanh)",
-   CurrentValue = true,
-   Callback = function(Value) _G.FastAttack = Value end,
 })
 
 -- TAB SEA EVENT
@@ -524,7 +533,7 @@ SettingTab:CreateButton({
 -- [[ THÔNG BÁO ]]
 Rayfield:Notify({
    Title = "Apple Hub",
-   Content = "✅ Đã fix! Bay cao 10s, Auto Click M1, Auto Quest hoạt động!",
+   Content = "✅ FIX TRIỆT ĐỂ! Bay 15s, Auto Click M1, Auto Quest hoạt động!",
    Duration = 5,
    Image = 4483345998,
 })
