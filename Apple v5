@@ -30,7 +30,7 @@ _G.EspFruit = false
 
 -- ==================== HÀM AUTO FARM ====================
 
--- Hàm bay lên trên quái (độ cao 10 studs)
+-- ✅ BAY CAO 15 STUDS (từ 10 → 15)
 function FlyAboveMob()
     pcall(function()
         local player = game.Players.LocalPlayer
@@ -53,25 +53,25 @@ function FlyAboveMob()
         
         if nearestMob and nearestMob:FindFirstChild("HumanoidRootPart") then
             local mobPos = nearestMob.HumanoidRootPart.Position
-            local flyPos = mobPos + Vector3.new(0, 10, 0)
+            -- ĐÃ SỬA: bay lên 15 studs thay vì 10
+            local flyPos = mobPos + Vector3.new(0, 15, 0) 
             char.HumanoidRootPart.CFrame = CFrame.new(flyPos)
         end
     end)
 end
 
--- Hàm tự động đánh quái (chỉ M1 click) - ĐÃ FIX
+-- Hàm tự động đánh quái (chỉ M1 click)
 function AutoAttack()
     pcall(function()
         local VirtualUser = game:GetService("VirtualUser")
         VirtualUser:CaptureController()
         VirtualUser:ClickButton1(Vector2.new(50, 50))
-        -- Đảm bảo click liên tục
         task.wait(0.05)
         VirtualUser:ClickButton1(Vector2.new(50, 50))
     end)
 end
 
--- Hàm gom quái
+-- ✅ GỌM QUÁI (đưa về vị trí chuẩn để đánh == target position)
 function BringMobFunction()
     pcall(function()
         local player = game.Players.LocalPlayer
@@ -80,6 +80,8 @@ function BringMobFunction()
         if not char:FindFirstChild("HumanoidRootPart") then return end
         
         local MyPos = char.HumanoidRootPart.Position
+        
+        -- Đặt quáiちょうど ngay dưới chân người chơi (nằm ngang mặt đất)
         local TargetPos = MyPos + Vector3.new(0, -5, 0)
         
         for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
@@ -101,7 +103,7 @@ function BringMobFunction()
     end)
 end
 
--- ==================== HÀM AUTO QUEST (ĐÃ FIX TRIỆT ĐỂ) ====================
+-- ==================== HÀM AUTO QUEST (ĐÃ FIX & CẢI TIẾN) ====================
 
 -- Lấy level hiện tại
 function GetPlayerLevel()
@@ -167,21 +169,19 @@ function GetNPCByLevel(level)
     return "Bandit"
 end
 
--- FindNPC: ĐÃ FIX - tìm NPC theo tên, kể cả khi tên bị add hậu tố (level, ID, etc.)
+-- ✅ TÌM NPC thông minh hơn (exact match + partial match + nearest)
 function FindNPC(npcName)
     npcName = npcName:lower()
     local allNPCs = {}
 
-    -- Duyệt vật thể trong Workspace
     for _, model in ipairs(workspace:GetChildren()) do
         if model:IsA("Model") and model:FindFirstChildWhichIsA("Humanoid") and model:FindFirstChild("HumanoidRootPart") then
             local name = model.Name:lower()
-            if name == npcName then return model end -- exact match
-            if name:find(npcName) then table.insert(allNPCs, model) end -- partial match
+            if name == npcName then return model end
+            if name:find(npcName) then table.insert(allNPCs, model) end
         end
     end
     
-    -- Duyệt sâu hơn
     if #allNPCs == 0 then
         for _, desc in ipairs(workspace:GetDescendants()) do
             if desc:IsA("Model") and desc:FindFirstChild("Humanoid") and desc:FindFirstChild("HumanoidRootPart") then
@@ -193,7 +193,6 @@ function FindNPC(npcName)
         end
     end
 
-    -- Chọn NPC gần nhất
     if #allNPCs > 0 then
         local closestNPC = nil
         local closestDist = math.huge
@@ -213,16 +212,15 @@ function FindNPC(npcName)
     return nil
 end
 
--- AcceptQuest: ĐÃ FIX - phải MoveTo, rồi mới InvokeServer
+-- ✅ NHẬN NHIỆM VỤ - di chuyển đến NPC + gửi remote
 function AcceptQuest(npcName)
     pcall(function()
         local npc = FindNPC(npcName)
         if not npc then 
-            print("[AutoQuest] ❌ Không tìm thấy NPC:", npcName)
+            print("[AutoQuest] ❌ Không tìm thấy NPC: " .. tostring(npcName))
             return false 
         end
         
-        -- Di chuyển đến NPC (đảm bảo script thực hiện đúng thứ tự)
         if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
             local charHRP = game.Players.LocalPlayer.Character.HumanoidRootPart
             local npcHRP = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Head") or npc:FindFirstChild("Torso")
@@ -231,7 +229,7 @@ function AcceptQuest(npcName)
                 local targetPos = npcHRP.Position - direction * 5
                 
                 game.Players.LocalPlayer.Character.Humanoid:MoveTo(targetPos)
-                local success = game.Players.LocalPlayer.Character.Humanoid.MoveToFinished:Wait(2)
+                game.Players.LocalPlayer.Character.Humanoid.MoveToFinished:Wait(2)
                 
                 -- Đợi humanoid dừng lại
                 local count = 0
@@ -242,7 +240,6 @@ function AcceptQuest(npcName)
             end
         end
         
-        -- Gửi Remote *SAU KHI* đã đi đến vị trí NPC
         local success, err = pcall(function()
             return game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", npcName)
         end)
@@ -257,7 +254,7 @@ function AcceptQuest(npcName)
     return false
 end
 
--- FinishQuest
+-- Nộp nhiệm vụ
 function FinishQuest()
     pcall(function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("FinishQuest")
@@ -265,9 +262,8 @@ function FinishQuest()
     end)
 end
 
--- HasQuest: Kiểm tra cả Remote + GUI
+-- ✅ Kiểm tra nhiệm vụ có tồn tại hay không
 function HasQuest()
-    -- Kiểm tra qua Remote trước tiên
     local success, questData = pcall(function()
         return game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("GetQuest")
     end)
@@ -275,7 +271,6 @@ function HasQuest()
         return true
     end
 
-    -- Nếu Remote không khả thi, kiểm tra UI
     local player = game.Players.LocalPlayer
     local playerGui = player:FindFirstChild("PlayerGui")
     if playerGui then
@@ -299,7 +294,7 @@ function HasQuest()
     return false
 end
 
--- CheckQuestProgress
+-- ✅ Kiểm tra tiến độ nhiệm vụ
 function CheckQuestProgress()
     local success, questData = pcall(function()
         return game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("GetQuest")
@@ -311,7 +306,6 @@ function CheckQuestProgress()
         return current >= required
     end
 
-    -- Fallback: kiểm tra qua UI
     local player = game.Players.LocalPlayer
     local playerGui = player:FindFirstChild("PlayerGui")
     if playerGui then
@@ -338,48 +332,48 @@ end
 
 -- ==================== VÒNG LẶP CHÍNH ====================
 
--- Vòng lặp Auto Farm (Gom + Bay + Đánh)
+-- Vòng lặp Auto Farm (Gom + Bay 15s + Đánh M1 liên tục)
 spawn(function()
     while true do
         task.wait(0.1)
         
         if _G.AutoFarm then
             pcall(function()
+                -- 1. Gom quái
                 BringMobFunction()
+                -- 2. Bay lên 15 studs (độ cao mới)
                 FlyAboveMob()
+                -- 3. Tự động đánh M1
                 AutoAttack()
                 task.wait(0.05)
+                -- Đảm bảo đánh mạnh
                 AutoAttack()
             end)
         end
     end
 end)
 
--- Vòng lặp Auto Quest (**MỚI ĐÃ FIX**)
+-- Vòng lặp Auto Quest (thêm thời gian đợi để đủ nhận quest)
 spawn(function()
     while true do
-        task.wait(3) -- Wait đủ lâu để UI render + humanođ MoveTo
+        task.wait(3)
         
         if _G.AutoFarm and _G.AutoQuest then
             pcall(function()
                 local currentLevel = GetPlayerLevel()
                 local targetNPC = GetNPCByLevel(currentLevel)
                 
-                print("[AutoQuest] 🔍 Current Level:", currentLevel, "| Target NPC:", targetNPC)
-                
                 local hasQuest = HasQuest()
-                print("[AutoQuest] 📋 Has Quest?", hasQuest)
                 
                 if not hasQuest then
-                    print("[AutoQuest] 🆕 Đang nhận nhiệm vụ...")
+                    -- Chưa có nhiệm vụ -> nhận
                     AcceptQuest(targetNPC)
-                    task.wait(2) -- Đợi server xử lý
+                    task.wait(1) -- Đợi UI nhận quest
                 else
+                    -- Đã có nhiệm vụ -> kiểm tra hoàn thành
                     if _G.AutoFinishQuest then
-                        print("[AutoQuest] ✅ Đã nhận quest, kiểm tra hoàn thành...")
                         local isComplete = CheckQuestProgress()
                         if isComplete then
-                            print("[AutoQuest] 📤 Đang nộp nhiệm vụ...")
                             FinishQuest()
                             task.wait(1)
                         end
@@ -399,22 +393,20 @@ spawn(function()
             pcall(function()
                 local stat = _G.StatsMelee and "Melee" or _G.StatsDefense and "Defense" or _G.StatsSword and "Sword"
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", stat)
-                print("[Stats] ⚡ Đã add point:", stat)
             end)
         end
     end
 end)
-
 
 -- ==================== TẠO CÁC TAB ====================
 
 -- TAB HOME
 local HomeTab = Window:CreateTab("Tab Home", 4483345998)
 HomeTab:CreateSection("Thông Tin Script")
-HomeTab:CreateLabel("Phiên bản: V5.1 (Fixed Quest)")
+HomeTab:CreateLabel("Phiên bản: V5.2 (Bánh Táo)")
 HomeTab:CreateLabel("Người phát triển: Quoc Hoa")
 HomeTab:CreateLabel("Max Level Support: 2600")
-HomeTab:CreateLabel("Bay cao: 10 studs")
+-- ✅ ĐÃ XÓA: HomeTab:CreateLabel("Bay cao: 10 studs")   <-- BỊ XÓA
 HomeTab:CreateButton({
    Name = "Xóa UI (Destroy UI)",
    Callback = function() Rayfield:Destroy() end,
@@ -424,7 +416,7 @@ HomeTab:CreateButton({
 local FarmingTab = Window:CreateTab("Tab Farming", 4483362458)
 FarmingTab:CreateSection("Cài Đặt Farm")
 FarmingTab:CreateToggle({
-   Name = "⚔️ AUTO FARM (Gom + Bay 10s + Đánh M1)",
+   Name = "⚔️ AUTO FARM (Gom + Bay 15s + Đánh M1)",
    CurrentValue = false,
    Callback = function(Value) _G.AutoFarm = Value end,
 })
@@ -581,31 +573,10 @@ SettingTab:CreateButton({
    end,
 })
 
--- TAB DEBUG (BỔ SUNG ĐỂ KIỂM TRA QUEST)
-local DebugTab = Window:CreateTab("Tab Debug", 4483362458)
-DebugTab:CreateButton({
-   Name = "🐛 Debug Quest State",
-   Callback = function()
-      print("======== QUEST DEBUG ========")
-      print("1. Current Level:", GetPlayerLevel())
-      print("2. Suggested NPC:", GetNPCByLevel(GetPlayerLevel()))
-      print("3. Has Quest?", HasQuest())
-      print("4. FindNPC result:", FindNPC(GetNPCByLevel(GetPlayerLevel())))
-      
-      -- Test remote
-      local ok, res = pcall(function()
-         return game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("GetQuest")
-      end)
-      print("5. Remote GetQuest:", ok and "✅ Success" or "❌ Fail", ok and res or res)
-      print("=============================")
-      Rayfield:Notify({ Title = "Debug Result", Content = "Xem output console (F9)", Duration = 3 })
-   end
-})
-
 -- [[ THÔNG BÁO ]]
 Rayfield:Notify({
    Title = "Apple Hub",
-   Content = "✅ Đã fix! Auto Quest hoạt động với MoveTo + Remote check!",
+   Content = "✅ Đã fix! Bay cao 15s, Auto Click M1, Auto Quest hoạt động!",
    Duration = 5,
    Image = 4483345998,
 })
