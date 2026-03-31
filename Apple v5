@@ -1,1 +1,514 @@
-đợi
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "🍎 Apple Hub",
+   LoadingTitle = "Apple Hub - Loading...",
+   LoadingSubtitle = "by Quoc Hoa",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "AppleHubV5",
+      FileName = "Config"
+   },
+   KeySystem = false 
+})
+
+-- [[ BIẾN TOÀN CỤ ]]
+_G.AutoFarm = false
+_G.AutoFarmNearest = false
+_G.BringMob = true
+_G.DistanceMob = 300
+_G.AutoQuest = true
+_G.AutoFinishQuest = true
+_G.FastAttack = true
+_G.SelectWeapon = "Melee"
+_G.AutoClick = false
+_G.SilentAim = false
+_G.AutoShip = false
+_G.AutoSB = false
+_G.AutoTerror = false
+_G.SelectMaterial = "Bones"
+_G.StatsMelee = false
+_G.EspPlayer = false
+_G.EspFruit = false
+
+-- ==================== HÀM AUTO QUEST BLOX FRUITS ====================
+
+-- Lấy level hiện tại
+function GetPlayerLevel()
+    local success, lvl = pcall(function()
+        return game:GetService("Players").LocalPlayer.Data.Level.Value
+    end)
+    return success and lvl or 1
+end
+
+-- Lấy tên NPC theo level (cập nhật max level 2600)
+function GetNPCByLevel(level)
+    local npcConfig = {
+        -- SEA 1 (Level 1-700)
+        {maxLvl = 10, npc = "Bandit", area = "Jungle"},
+        {maxLvl = 30, npc = "Monkey", area = "Jungle"},
+        {maxLvl = 60, npc = "Gorilla", area = "Jungle"},
+        {maxLvl = 90, npc = "Pirate", area = "Pirate Village"},
+        {maxLvl = 120, npc = "Brute", area = "Pirate Village"},
+        {maxLvl = 150, npc = "Desert Bandit", area = "Desert"},
+        {maxLvl = 190, npc = "Desert Officer", area = "Desert"},
+        {maxLvl = 240, npc = "Snow Bandit", area = "Snow Island"},
+        {maxLvl = 290, npc = "Snow Warrior", area = "Snow Island"},
+        {maxLvl = 340, npc = "Chief Petty Officer", area = "Marine Base"},
+        {maxLvl = 390, npc = "Sky Bandit", area = "Sky Island"},
+        {maxLvl = 450, npc = "Sky Warrior", area = "Sky Island"},
+        {maxLvl = 500, npc = "Galley Pirate", area = "Fountain City"},
+        {maxLvl = 550, npc = "Galley Captain", area = "Fountain City"},
+        {maxLvl = 600, npc = "Magma Ninja", area = "Magma Village"},
+        {maxLvl = 650, npc = "Lava Pirate", area = "Magma Village"},
+        {maxLvl = 700, npc = "Ship Deckhand", area = "Fishman Island"},
+        -- SEA 2 (Level 700-1525)
+        {maxLvl = 775, npc = "Fishman Warrior", area = "Fishman Island"},
+        {maxLvl = 850, npc = "Fishman Captain", area = "Fishman Island"},
+        {maxLvl = 925, npc = "Forest Pirate", area = "Green Zone"},
+        {maxLvl = 1000, npc = "Mythologist", area = "Graveyard"},
+        {maxLvl = 1075, npc = "Trainee", area = "Graveyard"},
+        {maxLvl = 1150, npc = "Factory Staff", area = "Hot and Cold"},
+        {maxLvl = 1225, npc = "Lab Subordinate", area = "Hot and Cold"},
+        {maxLvl = 1300, npc = "Diamond", area = "Cake Land"},
+        {maxLvl = 1375, npc = "Pirate Millionaire", area = "Cake Land"},
+        {maxLvl = 1450, npc = "Bounty Hunter", area = "Cake Land"},
+        {maxLvl = 1525, npc = "Zombie", area = "Graveyard"},
+        -- SEA 3 (Level 1525-2600)
+        {maxLvl = 1575, npc = "Pirate", area = "Port Town"},
+        {maxLvl = 1650, npc = "Raider", area = "Hydra Island"},
+        {maxLvl = 1725, npc = "Mercenary", area = "Hydra Island"},
+        {maxLvl = 1800, npc = "Swordsman", area = "Great Tree"},
+        {maxLvl = 1875, npc = "Elite Pirate", area = "Great Tree"},
+        {maxLvl = 1950, npc = "Crew Member", area = "Castle on Sea"},
+        {maxLvl = 2025, npc = "Guard", area = "Castle on Sea"},
+        {maxLvl = 2100, npc = "Marine Commodore", area = "Marine Base"},
+        {maxLvl = 2175, npc = "Marine Rear Admiral", area = "Marine Base"},
+        {maxLvl = 2250, npc = "Marine Vice Admiral", area = "Marine Base"},
+        {maxLvl = 2325, npc = "Pirate", area = "Cake Island"},
+        {maxLvl = 2400, npc = "Cook", area = "Cake Island"},
+        {maxLvl = 2475, npc = "Chieftain", area = "Cake Island"},
+        {maxLvl = 2550, npc = "Royal Soldier", area = "Castle on Sea"},
+        {maxLvl = 2600, npc = "Elite Guard", area = "Castle on Sea"},
+    }
+    
+    for _, config in ipairs(npcConfig) do
+        if level <= config.maxLvl then
+            return config.npc, config.area
+        end
+    end
+    return "Bandit", "Jungle"
+end
+
+-- Kiểm tra đã có nhiệm vụ chưa
+function HasQuest()
+    local success, result = pcall(function()
+        local playerGui = game.Players.LocalPlayer.PlayerGui
+        if playerGui:FindFirstChild("Quest") then
+            local questFrame = playerGui.Quest:FindFirstChild("Frame")
+            if questFrame and questFrame.Visible then
+                return true
+            end
+        end
+        return false
+    end)
+    return success and result or false
+end
+
+-- Tìm NPC trong Workspace
+function FindNPC(npcName)
+    for _, v in pairs(game:GetService("Workspace"):GetDescendants()) do
+        if v:IsA("Model") and v.Name:lower() == npcName:lower() then
+            return v
+        end
+    end
+    for _, v in pairs(game:GetService("Workspace"):GetDescendants()) do
+        if v:IsA("Model") and v.Name:lower():find(npcName:lower()) then
+            return v
+        end
+    end
+    return nil
+end
+
+-- Nhận nhiệm vụ mới
+function AcceptQuest(npcName)
+    pcall(function()
+        local npc = FindNPC(npcName)
+        if npc then
+            local npcPart = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Head") or npc:FindFirstChild("Torso")
+            if npcPart then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npcPart.CFrame * CFrame.new(0, 0, 3)
+                task.wait(0.5)
+                local args = { "StartQuest", npcName }
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+                task.wait(0.5)
+                return true
+            end
+        end
+        return false
+    end)
+end
+
+-- Nộp nhiệm vụ
+function FinishQuest()
+    pcall(function()
+        local args = { "FinishQuest" }
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+        task.wait(0.5)
+    end)
+end
+
+-- Kiểm tra tiến độ nhiệm vụ
+function CheckQuestProgress()
+    local success, result = pcall(function()
+        local playerGui = game.Players.LocalPlayer.PlayerGui
+        local questGui = playerGui:FindFirstChild("Quest")
+        if questGui then
+            local frame = questGui:FindFirstChild("Frame")
+            if frame then
+                local text = frame:FindFirstChild("TextLabel")
+                if text and text.Text then
+                    local current, total = text.Text:match("(%d+)/(%d+)")
+                    if current and total then
+                        return tonumber(current) >= tonumber(total)
+                    end
+                end
+            end
+        end
+        return false
+    end)
+    return success and result or false
+end
+
+-- ==================== HÀM GOM QUÁI ====================
+function BringMobFunction()
+    spawn(function()
+        while _G.AutoFarmNearest do
+            task.wait()
+            if _G.BringMob then
+                pcall(function()
+                    local MyPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+                    local TargetPos = MyPos + Vector3.new(0, -5, 0)
+                    
+                    for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
+                            if (v.HumanoidRootPart.Position - MyPos).Magnitude <= _G.DistanceMob then
+                                v.HumanoidRootPart.CanCollide = false
+                                v.HumanoidRootPart.CFrame = CFrame.new(TargetPos)
+                                if v.Humanoid:FindFirstChild("Animator") then
+                                    v.Humanoid.Animator:Destroy()
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+        end
+    end)
+end
+
+-- ==================== HÀM AUTO QUEST ====================
+function AutoQuestFunction()
+    spawn(function()
+        while _G.AutoFarmNearest do
+            task.wait(2)
+            if _G.AutoQuest then
+                pcall(function()
+                    local currentLevel = GetPlayerLevel()
+                    local targetNPC, targetArea = GetNPCByLevel(currentLevel)
+                    
+                    if not HasQuest() then
+                        AcceptQuest(targetNPC)
+                        task.wait(1)
+                    else
+                        if _G.AutoFinishQuest then
+                            if CheckQuestProgress() then
+                                FinishQuest()
+                                task.wait(1)
+                                AcceptQuest(targetNPC)
+                            end
+                        end
+                    end
+                end)
+            end
+        end
+    end)
+end
+
+-- ==================== HÀM AUTO CLICK ====================
+function AutoClickFunction()
+    spawn(function()
+        while _G.AutoClick do
+            task.wait(0.05)
+            pcall(function()
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
+            end)
+        end
+    end)
+end
+
+-- ==================== HÀM AUTO FARM (Cơ bản) ====================
+function AutoFarmFunction()
+    spawn(function()
+        while _G.AutoFarm do
+            task.wait()
+            pcall(function()
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):ClickButton1(Vector2.new(50, 50))
+            end)
+        end
+    end)
+end
+
+-- [[ TAB HOME ]]
+local HomeTab = Window:CreateTab("Tab Home", 4483345998)
+HomeTab:CreateSection("Thông Tin Script")
+HomeTab:CreateLabel("Phiên bản: V5")
+HomeTab:CreateLabel("Người phát triển: Quoc Hoa")
+HomeTab:CreateLabel("Max Level Support: 2600")
+HomeTab:CreateButton({
+   Name = "Xóa UI (Destroy UI)",
+   Callback = function() Rayfield:Destroy() end,
+})
+
+-- [[ TAB FARMING ]]
+local FarmingTab = Window:CreateTab("Tab Farming", 4483362458)
+FarmingTab:CreateSection("Setting Farm")
+FarmingTab:CreateDropdown({
+   Name = "Select Weapon:",
+   Options = {"Melee","Sword","Blox Fruit"},
+   CurrentOption = {"Melee"},
+   Callback = function(Option) _G.SelectWeapon = Option[1] end,
+})
+FarmingTab:CreateToggle({
+   Name = "Select Fast Delay: Fast Attack",
+   CurrentValue = true,
+   Callback = function(Value) _G.FastAttack = Value end,
+})
+FarmingTab:CreateSection("Main")
+FarmingTab:CreateToggle({
+   Name = "Auto Farm Level",
+   CurrentValue = false,
+   Callback = function(Value) 
+      _G.AutoFarm = Value
+      AutoFarmFunction()
+   end,
+})
+FarmingTab:CreateToggle({
+   Name = "Auto Farm Nearest (Kéo Quái)",
+   CurrentValue = false,
+   Callback = function(Value) 
+      _G.AutoFarmNearest = Value
+      if Value then
+         BringMobFunction()
+         AutoQuestFunction()
+      end
+   end,
+})
+FarmingTab:CreateSection("Auto Quest Settings")
+FarmingTab:CreateToggle({
+   Name = "Auto Accept Quest (Nhận Nhiệm Vụ)",
+   CurrentValue = true,
+   Callback = function(Value) _G.AutoQuest = Value end,
+})
+FarmingTab:CreateToggle({
+   Name = "Auto Finish Quest (Nộp Nhiệm Vụ)",
+   CurrentValue = true,
+   Callback = function(Value) _G.AutoFinishQuest = Value end,
+})
+FarmingTab:CreateSlider({
+   Name = "Khoảng cách gom quái (Studs)",
+   Min = 100,
+   Max = 500,
+   CurrentValue = 300,
+   Flag = "DistanceMob",
+   Callback = function(Value) _G.DistanceMob = Value end,
+})
+FarmingTab:CreateToggle({
+   Name = "Gom Quái (Bring Mob)",
+   CurrentValue = true,
+   Callback = function(Value) _G.BringMob = Value end,
+})
+
+-- [[ TAB COMBAT ]]
+local CombatTab = Window:CreateTab("Tab Combat", 4483362458)
+CombatTab:CreateSection("PvP Settings")
+CombatTab:CreateToggle({
+   Name = "Auto Click (Fast)",
+   CurrentValue = false,
+   Callback = function(Value) 
+      _G.AutoClick = Value
+      AutoClickFunction()
+   end,
+})
+CombatTab:CreateToggle({
+   Name = "Silent Aim (Test)",
+   CurrentValue = false,
+   Callback = function(Value) _G.SilentAim = Value end,
+})
+CombatTab:CreateSection("Player Tools")
+CombatTab:CreateButton({
+   Name = "Invis Name",
+   Callback = function() 
+      pcall(function()
+         game.Players.LocalPlayer.Character.Head.Transparency = 1
+      end)
+   end,
+})
+
+-- [[ TAB SEA EVENT ]]
+local SeaTab = Window:CreateTab("Tab Sea Event", 4483362458)
+SeaTab:CreateSection("Ship Farming")
+SeaTab:CreateToggle({
+   Name = "Auto Farm Ship",
+   CurrentValue = false,
+   Callback = function(Value) _G.AutoShip = Value end,
+})
+SeaTab:CreateSection("Sea Beasts")
+SeaTab:CreateToggle({
+   Name = "Auto Sea Beast",
+   CurrentValue = false,
+   Callback = function(Value) _G.AutoSB = Value end,
+})
+SeaTab:CreateToggle({
+   Name = "Auto Terror Shark",
+   CurrentValue = false,
+   Callback = function(Value) _G.AutoTerror = Value end,
+})
+
+-- [[ TAB QUEST & ITEM ]]
+local QuestTab = Window:CreateTab("Tab Quest & Item", 4483362458)
+QuestTab:CreateSection("Items")
+QuestTab:CreateButton({
+   Name = "Pull Level (Mirage)",
+   Callback = function() 
+      pcall(function()
+         local args = { "MiragePull" }
+         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+      end)
+   end,
+})
+QuestTab:CreateSection("Materials")
+QuestTab:CreateDropdown({
+   Name = "Select Material:",
+   Options = {"Bones","Conjured Cocoa","Dragon Scale","Fish Tail","Magma Ore","Leather","Mystic Droplet","Vampire Fang","Radioactive Material"},
+   CurrentOption = {"Bones"},
+   Callback = function(Option) _G.SelectMaterial = Option[1] end,
+})
+QuestTab:CreateButton({
+   Name = "Teleport to Material (Coming Soon)",
+   Callback = function() 
+      Rayfield:Notify({
+         Title = "Thông báo",
+         Content = "Tính năng đang phát triển!",
+         Duration = 2,
+      })
+   end,
+})
+
+-- [[ TAB STATS & ESP ]]
+local StatsTab = Window:CreateTab("Tab Stats & Esp", 4483362458)
+StatsTab:CreateSection("Auto Stats")
+StatsTab:CreateToggle({
+   Name = "Auto Stats Melee",
+   CurrentValue = false,
+   Callback = function(Value) _G.StatsMelee = Value end,
+})
+StatsTab:CreateToggle({
+   Name = "Auto Stats Defense",
+   CurrentValue = false,
+   Callback = function(Value) _G.StatsDefense = Value end,
+})
+StatsTab:CreateToggle({
+   Name = "Auto Stats Sword",
+   CurrentValue = false,
+   Callback = function(Value) _G.StatsSword = Value end,
+})
+StatsTab:CreateSection("Visuals")
+StatsTab:CreateToggle({
+   Name = "ESP Players",
+   CurrentValue = false,
+   Callback = function(Value) _G.EspPlayer = Value end,
+})
+StatsTab:CreateToggle({
+   Name = "ESP Fruit",
+   CurrentValue = false,
+   Callback = function(Value) _G.EspFruit = Value end,
+})
+
+-- [[ TAB SETTING ]]
+local SettingTab = Window:CreateTab("Tab Setting", 4483362458)
+SettingTab:CreateSection("Performance")
+SettingTab:CreateButton({
+   Name = "Fix Lag (Potato Mode)",
+   Callback = function() 
+      pcall(function()
+         local Lighting = game:GetService("Lighting")
+         Lighting.GlobalShadows = false
+         Lighting.FogEnd = 9000000000
+         Lighting.Brightness = 0
+         workspace.Terrain.WaterWaveSize = 0
+         workspace.Terrain.WaterReflectance = 0
+         workspace.Terrain.WaterTransparency = 0
+         Rayfield:Notify({
+            Title = "Fix Lag",
+            Content = "Đã bật chế độ Potato Mode!",
+            Duration = 2,
+         })
+      end)
+   end,
+})
+SettingTab:CreateSlider({
+   Name = "WalkSpeed",
+   Min = 16,
+   Max = 300,
+   CurrentValue = 16,
+   Flag = "WS",
+   Callback = function(Value)
+      pcall(function()
+         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+      end)
+   end,
+})
+SettingTab:CreateSlider({
+   Name = "JumpPower",
+   Min = 50,
+   Max = 300,
+   CurrentValue = 50,
+   Flag = "JP",
+   Callback = function(Value)
+      pcall(function()
+         game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+      end)
+   end,
+})
+SettingTab:CreateSection("Server")
+SettingTab:CreateButton({
+   Name = "Server Hop",
+   Callback = function() 
+      pcall(function()
+         game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+      end)
+   end,
+})
+SettingTab:CreateButton({
+   Name = "Rejoin Server",
+   Callback = function() 
+      pcall(function()
+         game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+      end)
+   end,
+})
+
+-- [[ KHỞI CHẠY CÁC HÀM NỀN ]]
+AutoFarmFunction()
+AutoClickFunction()
+
+-- [[ THÔNG BÁO ]]
+Rayfield:Notify({
+   Title = "Apple Hub",
+   Content = "✅ Đã tải giao diện thành công! Đã thêm Auto Quest & Gom Quái!",
+   Duration = 5,
+   Image = 4483345998,
+})
