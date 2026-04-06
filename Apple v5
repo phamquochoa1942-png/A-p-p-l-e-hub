@@ -1,1 +1,390 @@
-đợi 
+-- [1] CẤU HÌNH MÀU SẮC
+local Colors = {
+	Background = Color3.fromRGB(20, 20, 25),
+	Element = Color3.fromRGB(30, 30, 35),
+	Accent = Color3.fromRGB(255, 215, 0),
+	Text = Color3.fromRGB(255, 255, 255),
+	Stroke = Color3.fromRGB(50, 50, 55)
+}
+
+-- [2] HÀM HỖ TRỢ TẠO NHANH INSTANCE
+local function Create(class, properties)
+	local inst = Instance.new(class)
+	for prop, val in pairs(properties) do
+		inst[prop] = val
+	end
+	return inst
+end
+
+-- ============================================
+-- ⚙️ DÁN ID LOGO CỦA BẠN VÀO ĐÂY
+local LOGO_ID = "rbxassetid://82042449818006"  -- ⬅️ Thay số 0 bằng ID logo thật
+-- ============================================
+
+-- [3] KHỞI TẠO MAIN UI
+local screen = Create("ScreenGui", {Name = "AppleHubClone", ResetOnSpawn = false})
+screen.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Khung chính
+local mainFrame = Create("Frame", {
+	Name = "MainFrame",
+	Size = UDim2.new(0, 650, 0, 400),
+	Position = UDim2.new(0.5, -325, 0.5, -200),
+	BackgroundColor3 = Colors.Background,
+	BorderSizePixel = 0,
+	Parent = screen
+})
+Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = mainFrame})
+Create("UIStroke", {Thickness = 1, Color = Colors.Stroke, Parent = mainFrame})
+
+-- HEADER
+local header = Create("Frame", {
+	Name = "Header",
+	Size = UDim2.new(1, -20, 0, 50),
+	Position = UDim2.new(0, 10, 0, 10),
+	BackgroundTransparency = 1,
+	Parent = mainFrame
+})
+
+-- LOGO ẢNH THẬT
+local logo = Create("ImageLabel", {
+	Name = "Logo",
+	Size = UDim2.new(0, 35, 0, 35),
+	Position = UDim2.new(0, 0, 0, 0),
+	Image = LOGO_ID,
+	ImageColor3 = Colors.Accent,
+	BackgroundTransparency = 1,
+	Parent = header
+})
+Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = logo})
+
+-- Title (dời sang phải để né logo)
+Create("TextLabel", {
+	Name = "Title",
+	Size = UDim2.new(1, -50, 0, 25),
+	Position = UDim2.new(0, 45, 0, 0),
+	Text = "Apple Hub Premium | by Quoc Hoa",
+	TextColor3 = Colors.Accent,
+	Font = Enum.Font.GothamBold,
+	TextSize = 16,
+	BackgroundTransparency = 1,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	Parent = header
+})
+
+Create("TextLabel", {
+	Name = "Subtitle",
+	Size = UDim2.new(1, -50, 0, 20),
+	Position = UDim2.new(0, 45, 1, -20),
+	Text = "V6 | DEV EDITION",
+	TextColor3 = Color3.fromRGB(150, 150, 150),
+	Font = Enum.Font.Gotham,
+	TextSize = 11,
+	BackgroundTransparency = 1,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	Parent = header
+})
+
+-- SIDEBAR (BÊN TRÁI)
+local sidebar = Create("Frame", {
+	Name = "Sidebar",
+	Size = UDim2.new(0, 160, 1, -70),
+	Position = UDim2.new(0, 15, 0, 70),
+	BackgroundColor3 = Colors.Element,
+	Parent = mainFrame
+})
+Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = sidebar})
+
+-- Layout cho các nút bên trái
+Create("UIListLayout", {Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder, Parent = sidebar})
+Create("UIPadding", {PaddingTop = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10), Parent = sidebar})
+
+-- Hàm tạo nút Tab
+local function CreateTabButton(text, iconText)
+	local btn = Create("TextButton", {
+		Size = UDim2.new(1, -20, 0, 40),
+		LayoutOrder = #sidebar:GetChildren(),
+		Text = "  " .. text,
+		TextColor3 = Color3.fromRGB(180, 180, 180),
+		Font = Enum.Font.GothamBold,
+		TextSize = 15,
+		BackgroundColor3 = Color3.fromRGB(35, 35, 40),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = sidebar
+	})
+	Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = btn})
+	
+	-- Icon emoji
+	local icon = Create("TextLabel", {
+		Name = "Icon",
+		Size = UDim2.new(0, 20, 1, 0),
+		Position = UDim2.new(0, 5, 0, 0),
+		Text = iconText,
+		TextColor3 = Colors.Accent,
+		Font = Enum.Font.GothamBold,
+		TextSize = 16,
+		BackgroundTransparency = 1,
+		Parent = btn
+	})
+	
+	-- Highlight bar bên trái
+	local highlight = Create("Frame", {
+		Name = "Highlight",
+		Size = UDim2.new(0, 3, 0.7, 0),
+		Position = UDim2.new(0, 0, 0.15, 0),
+		BackgroundColor3 = Colors.Accent,
+		Visible = false,
+		Parent = btn
+	})
+	Create("UICorner", {CornerRadius = UDim.new(0, 2), Parent = highlight})
+
+	return btn
+end
+
+-- Tạo các Tab
+local tabFarm = CreateTabButton("Farm", "🌾")
+local tabAuto = CreateTabButton("Auto Farm", "⚔️")
+local tabInv = CreateTabButton("Inventory", "🎒")
+local tabTele = CreateTabButton("Teleport", "🗺️")
+local tabSet = CreateTabButton("Settings", "⚙️")
+
+-- CONTENT AREA (BÊN PHẢI)
+local contentArea = Create("ScrollingFrame", {
+	Name = "Content",
+	Size = UDim2.new(1, -190, 1, -70),
+	Position = UDim2.new(0, 185, 0, 70),
+	BackgroundColor3 = Colors.Element,
+	ScrollBarThickness = 5,
+	ScrollBarImageColor3 = Colors.Accent,
+	Parent = mainFrame
+})
+Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = contentArea})
+Create("UIPadding", {PaddingAll = UDim.new(0, 15), Parent = contentArea})
+
+-- NỘI DUNG TAB FARM
+local farmContent = Create("Frame", {
+	Name = "FarmPage",
+	Size = UDim2.new(1, 0, 1, 0),
+	BackgroundTransparency = 1,
+	Parent = contentArea
+})
+Create("UIListLayout", {Padding = UDim.new(0, 15), SortOrder = Enum.SortOrder.LayoutOrder, Parent = farmContent})
+
+-- 1. Title Farm
+local pageTitle = Create("TextLabel", {
+	Size = UDim2.new(1, 0, 0, 30),
+	Text = "🌾 Farm",
+	TextColor3 = Colors.Text,
+	Font = Enum.Font.GothamBold,
+	TextSize = 20,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	BackgroundTransparency = 1,
+	Parent = farmContent
+})
+
+-- 2. Button Script Farm
+local scriptFarmBtn = Create("TextButton", {
+	Size = UDim2.new(1, 0, 0, 40),
+	Text = "Script Farm",
+	TextColor3 = Colors.Text,
+	Font = Enum.Font.GothamBold,
+	TextSize = 16,
+	BackgroundColor3 = Colors.Background,
+	Parent = farmContent
+})
+Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = scriptFarmBtn})
+Create("UIStroke", {Thickness = 1.5, Color = Colors.Accent, Parent = scriptFarmBtn})
+
+-- 3. Toggle Auto Farm [Enemy]
+local toggleRow = Create("Frame", {
+	Size = UDim2.new(1, 0, 0, 40),
+	BackgroundTransparency = 1,
+	Parent = farmContent
+})
+
+Create("TextLabel", {
+	Size = UDim2.new(0.6, 0, 1, 0),
+	Text = "Auto Farm [Enemy]",
+	TextColor3 = Colors.Text,
+	Font = Enum.Font.Gotham,
+	TextSize = 15,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	BackgroundTransparency = 1,
+	Parent = toggleRow
+})
+
+-- Nút Toggle
+local toggleSwitch = Create("Frame", {
+	Name = "Switch",
+	Size = UDim2.new(0, 50, 0, 25),
+	Position = UDim2.new(1, -60, 0.5, -12.5),
+	BackgroundColor3 = Colors.Accent,
+	Parent = toggleRow
+})
+Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = toggleSwitch})
+
+local toggleKnob = Create("Frame", {
+	Name = "Knob",
+	Size = UDim2.new(0, 18, 0, 18),
+	Position = UDim2.new(1, -21, 0.5, -9),
+	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+	Parent = toggleSwitch
+})
+Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = toggleKnob})
+
+local toggleStatus = Create("TextLabel", {
+	Name = "Status",
+	Size = UDim2.new(0, 30, 1, 0),
+	Position = UDim2.new(0.5, -15, 0, 0),
+	Text = "ON",
+	TextColor3 = Color3.fromRGB(0, 0, 0),
+	Font = Enum.Font.GothamBold,
+	TextSize = 12,
+	BackgroundTransparency = 1,
+	Parent = toggleSwitch
+})
+
+-- 4. Slider Farm Speed
+local sliderRow = Create("Frame", {
+	Size = UDim2.new(1, 0, 0, 60),
+	BackgroundTransparency = 1,
+	Parent = farmContent
+})
+
+Create("TextLabel", {
+	Size = UDim2.new(1, 0, 0, 20),
+	Text = "Farm Speed",
+	TextColor3 = Colors.Text,
+	Font = Enum.Font.Gotham,
+	TextSize = 15,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	BackgroundTransparency = 1,
+	Parent = sliderRow
+})
+
+local sliderValue = Create("TextLabel", {
+	Name = "Value",
+	Size = UDim2.new(0, 40, 0, 20),
+	Position = UDim2.new(1, -40, 0, 0),
+	Text = "65",
+	TextColor3 = Color3.fromRGB(150, 150, 150),
+	Font = Enum.Font.GothamBold,
+	TextSize = 14,
+	BackgroundTransparency = 1,
+	Parent = sliderRow
+})
+
+local maxLabel = Create("TextLabel", {
+	Size = UDim2.new(0, 30, 0, 20),
+	Position = UDim2.new(1, -5, 0, 35),
+	Text = "100",
+	TextColor3 = Color3.fromRGB(100, 100, 100),
+	Font = Enum.Font.Gotham,
+	TextSize = 12,
+	BackgroundTransparency = 1,
+	Parent = sliderRow
+})
+local minLabel = Create("TextLabel", {
+	Size = UDim2.new(0, 20, 0, 20),
+	Position = UDim2.new(0, 0, 0, 35),
+	Text = "1",
+	TextColor3 = Color3.fromRGB(100, 100, 100),
+	Font = Enum.Font.Gotham,
+	TextSize = 12,
+	BackgroundTransparency = 1,
+	Parent = sliderRow
+})
+
+-- Thanh Slider
+local sliderTrack = Create("Frame", {
+	Name = "Track",
+	Size = UDim2.new(1, 0, 0, 6),
+	Position = UDim2.new(0, 0, 1, -15),
+	BackgroundColor3 = Color3.fromRGB(60, 60, 65),
+	Parent = sliderRow
+})
+Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = sliderTrack})
+
+local sliderFill = Create("Frame", {
+	Name = "Fill",
+	Size = UDim2.new(0.65, 0, 1, 0),
+	BackgroundColor3 = Colors.Accent,
+	Parent = sliderTrack
+})
+Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = sliderFill})
+
+local sliderThumb = Create("Frame", {
+	Name = "Thumb",
+	Size = UDim2.new(0, 14, 0, 14),
+	Position = UDim2.new(0.65, -7, 0.5, -7),
+	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+	Parent = sliderTrack
+})
+Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = sliderThumb})
+
+-- 5. Select Target Dropdown
+local dropdownRow = Create("Frame", {
+	Size = UDim2.new(1, 0, 0, 70),
+	BackgroundTransparency = 1,
+	Parent = farmContent
+})
+
+Create("TextLabel", {
+	Size = UDim2.new(1, 0, 0, 20),
+	Text = "Select Target",
+	TextColor3 = Colors.Text,
+	Font = Enum.Font.Gotham,
+	TextSize = 15,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	BackgroundTransparency = 1,
+	Parent = dropdownRow
+})
+
+local dropdownBox = Create("TextButton", {
+	Size = UDim2.new(1, 0, 0, 35),
+	Position = UDim2.new(0, 0, 1, -35),
+	Text = "  Level 10-20",
+	TextColor3 = Color3.fromRGB(200, 200, 200),
+	Font = Enum.Font.Gotham,
+	TextSize = 14,
+	BackgroundColor3 = Colors.Background,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	Parent = dropdownRow
+})
+Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = dropdownBox})
+Create("UIStroke", {Thickness = 1, Color = Colors.Stroke, Parent = dropdownBox})
+
+Create("TextLabel", {
+	Size = UDim2.new(0, 20, 1, 0),
+	Position = UDim2.new(1, -25, 0, 0),
+	Text = "▼",
+	TextColor3 = Color3.fromRGB(150, 150, 150),
+	Font = Enum.Font.GothamBold,
+	TextSize = 10,
+	BackgroundTransparency = 1,
+	Parent = dropdownBox
+})
+
+-- FOOTER
+local footer = Create("Frame", {
+	Name = "Footer",
+	Size = UDim2.new(0, 160, 0, 40),
+	Position = UDim2.new(0, 15, 1, -50),
+	BackgroundTransparency = 1,
+	Parent = mainFrame
+})
+
+local footerText = Create("TextLabel", {
+	Size = UDim2.new(1, 0, 1, 0),
+	Text = "Device: Oppo A5 2020\nStatus: Optimal (Low Power Mode)",
+	TextColor3 = Color3.fromRGB(100, 100, 100),
+	Font = Enum.Font.Gotham,
+	TextSize = 10,
+	TextWrapped = true,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	BackgroundTransparency = 1,
+	Parent = footer
+})
+
+print("✅ Giao diện đã tạo thành công!")
+print("📝 Đừng quên thay LOGO_ID ở dòng 26 bằng ID ảnh thật của bạn!")
