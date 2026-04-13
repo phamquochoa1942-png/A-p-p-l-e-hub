@@ -1,22 +1,31 @@
-_G.AutoFarm = true -- Bật/Tắt farm
+_G.AutoFarm = true
 
 task.spawn(function()
     while _G.AutoFarm do
-        task.wait(0.1) -- Tốc độ đánh
-        -- Quét quái trong folder NPCs sếp soi được trong Dex
+        -- Tốc độ gửi Remote (0.1 giây là cực nhanh rồi)
+        task.wait(0.1) 
+        
+        -- Quét quái trong folder NPCs sếp chụp trong Dex
         for _, v in pairs(workspace.NPCs:GetChildren()) do
             if v:IsA("Model") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
                 local root = v:FindFirstChild("HumanoidRootPart")
-                if root then
-                    -- Remote chuẩn Sailor Piece
+                local pRoot = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                
+                -- Khoảng cách để Remote có tác dụng (Thường dưới 50m)
+                if root and pRoot and (pRoot.Position - root.Position).Magnitude < 50 then
+                    
+                    -- BẮN REMOTE TỰ ĐỘNG (KHÔNG DÙNG CLICK ẢO)
+                    local remote = game:GetService("ReplicatedStorage").CombatSystem.Remotes.RequestHit
+                    
                     local args = {
-                        [1] = v, -- Target model quái
+                        [1] = v, -- Truyền thẳng Model con quái
                         [2] = {
                             ["HitPart"] = v:FindFirstChild("RightUpperLeg") or root,
                             ["HitPos"] = root.Position
                         }
                     }
-                    game:GetService("ReplicatedStorage").CombatSystem.Remotes.RequestHit:FireServer(unpack(args))
+                    
+                    remote:FireServer(unpack(args))
                 end
             end
         end
