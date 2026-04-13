@@ -1,47 +1,24 @@
-_G.AutoFarmSailor = true 
-
--- 1. Tự động nhận diện và trang bị vũ khí (Melee)
-local function EquipMelee()
-    local p = game.Players.LocalPlayer
-    local c = p.Character
-    if c and not c:FindFirstChildOfClass("Tool") then
-        local tool = p.Backpack:FindFirstChildOfClass("Tool")
-        if tool then
-            c.Humanoid:EquipTool(tool)
-        end
-    end
-end
+_G.AutoFarm = true -- Bật/Tắt farm
 
 task.spawn(function()
-    while _G.AutoFarmSailor do
-        EquipMelee() -- Tự lấy vũ khí ra tay
-
-        -- Quét quái trong folder Enemies của Sailor Piece
-        for _, v in pairs(workspace.Enemies:GetChildren()) do
-            local humanoid = v:FindFirstChildOfClass("Humanoid")
-            local rootPart = v:FindFirstChild("HumanoidRootPart")
-            
-            if v:IsA("Model") and humanoid and humanoid.Health > 0 and rootPart then
-                local pRoot = game.Players.LocalPlayer.Character.HumanoidRootPart
-                
-                -- Khoảng cách an toàn để script bắt đầu quét quái (50 mét)
-                if pRoot and (pRoot.Position - rootPart.Position).Magnitude < 50 then
-                    
-                    -- [ REMOTE ĐÁNH ]: Sailor Piece RequestHit
-                    -- Truyền thẳng mục tiêu (Chân hoặc Thân) vào Remote
+    while _G.AutoFarm do
+        task.wait(0.1) -- Tốc độ đánh
+        -- Quét quái trong folder NPCs sếp soi được trong Dex
+        for _, v in pairs(workspace.NPCs:GetChildren()) do
+            if v:IsA("Model") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                local root = v:FindFirstChild("HumanoidRootPart")
+                if root then
+                    -- Remote chuẩn Sailor Piece
                     local args = {
-                        [1] = v:FindFirstChild("RightUpperLeg") or rootPart,
-                        [2] = {} -- Bảng trống theo cấu trúc game
+                        [1] = v, -- Target model quái
+                        [2] = {
+                            ["HitPart"] = v:FindFirstChild("RightUpperLeg") or root,
+                            ["HitPos"] = root.Position
+                        }
                     }
-                    
                     game:GetService("ReplicatedStorage").CombatSystem.Remotes.RequestHit:FireServer(unpack(args))
-                    
                 end
             end
         end
-        
-        -- Tốc độ đánh (0.05s). Nếu muốn đánh nhanh hơn nữa ông có thể giảm xuống 0.01
-        task.wait(0.05) 
     end
 end)
- 
