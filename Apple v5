@@ -14,7 +14,23 @@ task.spawn(function()
                 hum:EquipTool(tool)
             end
         end
-
+-- hitbox
+for i, v in 
+pairs(game:GetService("workspace").NPCs:GetChildren())
+do
+        if v:FindFirst
+        child("HumanoidRootPart")
+        then
+          
+         v.HumanoidRootPart.Size = 
+         Vector3.new(15, 15, 15)
+         
+         v.HumanoidRootPart.Transpace = 
+         0.5
+         
+         v.HumanoidRootPart.CanCollide = false
+                end
+             end
         -- 2. Dùng đúng dòng Remote sếp vừa đưa
         -- Game này sếp soi Spy thấy rỗng nên cứ bắn thẳng thôi
         game:GetService("ReplicatedStorage").CombatSystem.Remotes.RequestHit:FireServer()
