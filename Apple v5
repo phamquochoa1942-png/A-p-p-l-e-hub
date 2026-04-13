@@ -1,33 +1,22 @@
-_G.AutoFarm = true
+_G.AutoFarm = true -- Bật/Tắt farm
 
 task.spawn(function()
     while _G.AutoFarm do
-        -- Tốc độ gửi Remote (0.1 giây là cực nhanh rồi)
-        task.wait(0.1) 
-        
-        -- Quét quái trong folder NPCs sếp chụp trong Dex
-        for _, v in pairs(workspace.NPCs:GetChildren()) do
-            if v:IsA("Model") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                local root = v:FindFirstChild("HumanoidRootPart")
-                local pRoot = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                
-                -- Khoảng cách để Remote có tác dụng (Thường dưới 50m)
-                if root and pRoot and (pRoot.Position - root.Position).Magnitude < 50 then
-                    
-                    -- BẮN REMOTE TỰ ĐỘNG (KHÔNG DÙNG CLICK ẢO)
-                    local remote = game:GetService("ReplicatedStorage").CombatSystem.Remotes.RequestHit
-                    
-                    local args = {
-                        [1] = v, -- Truyền thẳng Model con quái
-                        [2] = {
-                            ["HitPart"] = v:FindFirstChild("RightUpperLeg") or root,
-                            ["HitPos"] = root.Position
-                        }
-                    }
-                    
-                    remote:FireServer(unpack(args))
-                end
+        task.wait(0.1) -- Tốc độ sếp tự chỉnh (0.1 là khá nhanh rồi)
+
+        -- 1. Sếp phải tự cầm vũ khí (vì game check đòn đánh tay)
+        local plr = game.Players.LocalPlayer
+        local char = plr.Character
+        if char then
+            local tool = char:FindFirstChildOfClass("Tool") or plr.Backpack:FindFirstChildOfClass("Tool")
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if tool and hum and not char:FindFirstChild(tool.Name) then
+                hum:EquipTool(tool)
             end
         end
+
+        -- 2. Dùng đúng dòng Remote sếp vừa đưa
+        -- Game này sếp soi Spy thấy rỗng nên cứ bắn thẳng thôi
+        game:GetService("ReplicatedStorage").CombatSystem.Remotes.RequestHit:FireServer()
     end
 end)
