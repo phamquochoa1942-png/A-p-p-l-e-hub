@@ -23,7 +23,7 @@ do
         then
           
          v.HumanoidRootPart.Size = 
-         Vector3.new(15, 15, 15)
+         Vector3.new(20, 20, 20)
          
          v.HumanoidRootPart.Transpace = 
          0.5
