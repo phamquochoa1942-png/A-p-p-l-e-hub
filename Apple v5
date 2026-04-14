@@ -18,8 +18,8 @@ task.spawn(function()
         -- 2. Hitbox (Sửa lỗi dính chữ và sai chính tả của sếp nè)
         for i, v in pairs(game:GetService("Workspace").NPCs:GetChildren()) do
             if v:FindFirstChild("HumanoidRootPart") then -- Sếp nhớ gõ liền chữ này nha
-                v.HumanoidRootPart.Size = Vector3.new(20, 20, 20)
-                v.HumanoidRootPart.Transparency = 1 -- Sửa từ Transpace thành Transparency
+                v.HumanoidRootPart.Size = Vector3.new(35, 35, 35)
+                v.HumanoidRootPart.Transparency = 0.5 -- Sửa từ Transpace thành Transparency
                 v.HumanoidRootPart.CanCollide = false
             end
         end
