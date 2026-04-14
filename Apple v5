@@ -2,9 +2,9 @@ _G.AutoFarm = true -- Bật/Tắt farm
 
 task.spawn(function()
     while _G.AutoFarm do
-        task.wait(0.1) -- Tốc độ sếp tự chỉnh (0.1 là khá nhanh rồi)
+        task.wait(0.1)
 
-        -- 1. Sếp phải tự cầm vũ khí (vì game check đòn đánh tay)
+        -- 1. Tự cầm vũ khí
         local plr = game.Players.LocalPlayer
         local char = plr.Character
         if char then
@@ -14,25 +14,17 @@ task.spawn(function()
                 hum:EquipTool(tool)
             end
         end
--- hitbox
-for i, v in 
-pairs(game:GetService("workspace").NPCs:GetChildren())
-do
-        if v:FindFirst
-        child("HumanoidRootPart")
-        then
-          
-         v.HumanoidRootPart.Size = 
-         Vector3.new(20, 20, 20)
-         
-         v.HumanoidRootPart.Transpace = 
-         0.5
-         
-         v.HumanoidRootPart.CanCollide = false
-                end
-             end
-        -- 2. Dùng đúng dòng Remote sếp vừa đưa
-        -- Game này sếp soi Spy thấy rỗng nên cứ bắn thẳng thôi
+
+        -- 2. Hitbox (Sửa lỗi dính chữ và sai chính tả của sếp nè)
+        for i, v in pairs(game:GetService("Workspace").NPCs:GetChildren()) do
+            if v:FindFirstChild("HumanoidRootPart") then -- Sếp nhớ gõ liền chữ này nha
+                v.HumanoidRootPart.Size = Vector3.new(20, 20, 20)
+                v.HumanoidRootPart.Transparency = 0.5 -- Sửa từ Transpace thành Transparency
+                v.HumanoidRootPart.CanCollide = false
+            end
+        end
+
+        -- 3. Đánh quái
         game:GetService("ReplicatedStorage").CombatSystem.Remotes.RequestHit:FireServer()
     end
 end)
