@@ -19,7 +19,7 @@ task.spawn(function()
         for i, v in pairs(game:GetService("Workspace").NPCs:GetChildren()) do
             if v:FindFirstChild("HumanoidRootPart") then -- Sếp nhớ gõ liền chữ này nha
                 v.HumanoidRootPart.Size = Vector3.new(20, 20, 20)
-                v.HumanoidRootPart.Transparency = 0.5 -- Sửa từ Transpace thành Transparency
+                v.HumanoidRootPart.Transparency = 1 -- Sửa từ Transpace thành Transparency
                 v.HumanoidRootPart.CanCollide = false
             end
         end
