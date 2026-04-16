@@ -1,30 +1,30 @@
-_G.AutoFarm = true -- Bật/Tắt farm
-
+local Players = game:GetService("Players")
+local Plr = Players.LocalPlayer
+local RS = game:GetService("ReplicatedStogare")
+local Char = Plr.Character or Plr.CharacterAdded:Wait()
+local CombatSystem = RS:WaitForChild("CombatSystem")
+local Remotes = CombatSystem:WaitForChild("Remotes")
+local RequestHit = Remotes:WaitForChild("RequestHit")
+local function EquipWeapon()
+local hum = Char:FindFirstChildOfClass("humanoid")
+if not hum then return else end
+local tool = Char:FindFirstChildOfClass("Tool") or Char.Backpack:FindFirstChildOfClass("Tool")
+if tool and hum:FindFirstChild(tool.name) == nil then
+hum:EquipTool(tool)
+task.wait(0.05)
+end
+return tool ~= nil
+end
 task.spawn(function()
-    while _G.AutoFarm do
-        task.wait(0.1)
-
-        -- 1. Tự cầm vũ khí
-        local plr = game.Players.LocalPlayer
-        local char = plr.Character
-        if char then
-            local tool = char:FindFirstChildOfClass("Tool") or plr.Backpack:FindFirstChildOfClass("Tool")
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            if tool and hum and not char:FindFirstChild(tool.Name) then
-                hum:EquipTool(tool)
-            end
-        end
-
-        -- 2. Hitbox (Sửa lỗi dính chữ và sai chính tả của sếp nè)
-        for i, v in pairs(game:GetService("Workspace").NPCs:GetChildren()) do
-            if v:FindFirstChild("HumanoidRootPart") then -- Sếp nhớ gõ liền chữ này nha
-                v.HumanoidRootPart.Size = Vector3.new(35, 35, 35)
-                v.HumanoidRootPart.Transparency = 0.5 -- Sửa từ Transpace thành Transparency
-                v.HumanoidRootPart.CanCollide = false
-            end
-        end
-
-        -- 3. Đánh quái
-        game:GetService("ReplicatedStorage").CombatSystem.Remotes.RequestHit:FireServer()
+while true do 
+if not EquipWeapon() then
+task.wait(0.02)
+continue
+end
+_G.AutoAttack = true
+local function _G.AutoAttack() 
+while _G.AutoAttack == true do
+pcall(RequestHit.FireServer,RequestHit)
+task.wait(0.02)
     end
 end)
