@@ -3,10 +3,10 @@ local RS = game:GetService("ReplicatedStorage")
 local Plr = Players.LocalPlayer
 local Char = Plr.Character or Plr.CharacterAdded:Wait()
 local CombatSystem = Char:WaitForChild("CombatSystem")
-local RequestHit = CombatSystem:WaitForChild("RequestHit")
-local Remotes = RequestHit:WaitForChild("Remotes")
+local Remotes = CombatSystem:WaitForChild("Remotes")
+local RequestHit = Remotes:WaitForChild("RequestHit"(
 local hum = Char:FindFirstChild("Humanoid")
-while true do
+while true do 
 task.wait(0.12)
 pcall(RequestHit.FireServer,RequestHit)
  end 
