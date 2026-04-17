@@ -6,5 +6,7 @@ local CombatSystem = Char:WaitForChild("CombatSystem")
 local RequestHit = CombatSystem:WaitForChild("RequestHit")
 local Remotes = RequestHit:WaitForChild("Remotes")
 local hum = Char:FindFirstChild("Humanoid")
+while true do
+task.wait(0.12)
 pcall(RequestHit.FireServer,RequestHit)
  end 
