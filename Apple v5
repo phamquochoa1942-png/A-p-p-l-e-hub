@@ -4,10 +4,7 @@ local Plr = Players.LocalPlayer
 local Char = Plr.Character or Plr.CharacterAdded:Wait()
 local CombatSystem = Char:WaitForChild("CombatSystem")
 local RequestHit = CombatSystem:WaitForChild("RequestHit")
-local Remotes = RequestHit:WaitForChilf("Remotes")
+local Remotes = RequestHit:WaitForChild("Remotes")
 local hum = Char:FindFirstChild("Humanoid")
-local tool = Char:FindFirstChildOfClass("tool")
-Plr.Backpack:FindFirstChildOfClass("tool")
 pcall(RequestHit.FireServer,RequestHit)
  end 
-end
