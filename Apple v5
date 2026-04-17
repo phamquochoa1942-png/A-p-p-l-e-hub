@@ -4,7 +4,7 @@ local Plr = Players.LocalPlayer
 local Char = Plr.Character or Plr.CharacterAdded:Wait()
 local CombatSystem = Char:WaitForChild("CombatSystem")
 local Remotes = CombatSystem:WaitForChild("Remotes")
-local RequestHit = Remotes:WaitForChild("RequestHit"(
+local RequestHit = Remotes:WaitForChild("RequestHit")
 local hum = Char:FindFirstChild("Humanoid")
 while true do 
 task.wait(0.12)
