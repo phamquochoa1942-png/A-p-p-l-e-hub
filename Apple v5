@@ -1,12 +1,13 @@
 local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStogare")
+local RS = game:GetService("ReplicatedStorage")
 local Plr = Players.LocalPlayer
-local Char = Plr.CharCharacter or Plr.CharacterAdded:Wait()
+local Char = Plr.Character or Plr.CharacterAdded:Wait()
 local CombatSystem = RS:WaitForChild("CombatSystem")
 local Remotes = CombatSystem:WaitForChild("Remotes")
 local RequestHit = Remotes:WaitForChild("RequestHit")
+task.wait(1)
 local Hum = Char:FindFirstChild("Humanoid")
-if i, v in pairs(game.Workspace.NPCs:GetChildren()) do
+for i, v in pairs(game.Workspace.NPCs:GetChildren()) do
 if v:FindFirstChild("HumanoidRootPart") then
 v.HumanoidRootPart.Size = Vector3.new(50, 50, 50)
 v.HumanoidRootPart.CanCollide = false
