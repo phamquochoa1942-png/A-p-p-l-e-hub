@@ -9,7 +9,7 @@ task.wait(1)
 local Hum = Char:FindFirstChild("Humanoid")
 for i, v in pairs(game.Workspace.NPCs:GetChildren()) do
 if v:FindFirstChild("HumanoidRootPart") then
-v.HumanoidRootPart.Size = Vector3.new(200, 200, 200)
+v.HumanoidRootPart.Size = Vector3.new(400, 400, 400)
 v.HumanoidRootPart.CanCollide = false
 while true do
 task.wait(0.12)
