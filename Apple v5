@@ -1,12 +1,18 @@
 local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
+local RS = game:GetService("ReplicatedStogare")
 local Plr = Players.LocalPlayer
-local Char = Plr.Character or Plr.CharacterAdded:Wait()
+local Char = Plr.CharCharacter or Plr.CharacterAdded:Wait()
 local CombatSystem = RS:WaitForChild("CombatSystem")
 local Remotes = CombatSystem:WaitForChild("Remotes")
 local RequestHit = Remotes:WaitForChild("RequestHit")
-local hum = Char:FindFirstChild("Humanoid")
-while true do 
+local Hum = Char:FindFirstChild("Humanoid")
+if i, v in pairs(game.Workspace.NPCs:GetChildren()) do
+if v:FindFirstChild("HumanoidRootPart") then
+v.HumanoidRootPart.Size = Vector3.new(50, 50, 50)
+v.HumanoidRootPart.CanCollide = false
+while true do
 task.wait(0.12)
 pcall(RequestHit.FireServer,RequestHit)
- end 
+       end
+   end
+end
