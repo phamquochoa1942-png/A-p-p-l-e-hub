@@ -6,6 +6,7 @@ local CombatSystem = RS:WaitForChild("CombatSystem")
 local Remotes = CombatSystem:WaitForChild("Remotes")
 local RequestHit = Remotes:WaitForChild("RequestHit")
 local Hum = Char:FindFirstChild("Humanoid")
+task.wait(1)
 if i, v in pairs(game.Workspace.NPCs:GetChildren()) do
 if v:FindFirstChild("HumanoidRootPart") then
 v.HumanoidRootPart.Size = Vector3.new(50, 50, 50)
