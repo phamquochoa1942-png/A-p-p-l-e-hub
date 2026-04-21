@@ -1,22 +1,19 @@
 --[[
-    Apple Hub - Sailor Piece Auto Farm (FIXED)
-    Sửa: Đánh có sát thương + Tự động tìm đúng part để đánh
+    Apple Hub - Sailor Piece Auto Farm
+    Chỉ dùng Remote RequestHit - Không click ảo, không Bring Mob
 --]]
 
 _G.AutoQuestEnabled = true
 _G.FastAttackEnabled = true
-_G.VirtualClickEnabled = true
-_G.MultiTargetEnabled = true
 
 local HEIGHT_OFFSET = 8
 local TWEEN_SPEED = 200
 local QUEST_COOLDOWN = 1.5
-local ATTACK_RANGE = 25
+local ATTACK_RANGE = 30
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
@@ -83,6 +80,17 @@ local function getBestFarmData(level)
         end
     end
     return FarmTable[#FarmTable]
+end
+
+local function getTargetPart(mob)
+    local parts = {"HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso", "Head", "LeftLeg", "RightLeg"}
+    for _, partName in ipairs(parts) do
+        local part = mob:FindFirstChild(partName)
+        if part then
+            return part
+        end
+    end
+    return nil
 end
 
 local function getNearbyTargets(mobList)
@@ -260,30 +268,7 @@ local function tweenToTarget(target)
     end
 end
 
--- Hàm lấy part để đánh (ưu tiên HumanoidRootPart hoặc Torso)
-local function GetTargetPart(mob)
-    local parts = {"HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso", "Head"}
-    for _, partName in ipairs(parts) do
-        local part = mob:FindFirstChild(partName)
-        if part then
-            return part
-        end
-    end
-    return nil
-end
-
--- Click ảo M1
-task.spawn(function()
-    while _G.AutoQuestEnabled do
-        if _G.VirtualClickEnabled and isFloating then
-            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-        end
-        task.wait()
-    end
-end)
-
--- Fast Attack với RequestHit (có truyền target)
+-- Fast Attack dùng Remote thẳng (không click ảo)
 task.spawn(function()
     while _G.AutoQuestEnabled do
         if _G.FastAttackEnabled and isFloating then
@@ -291,7 +276,7 @@ task.spawn(function()
             if data then
                 local targets = getNearbyTargets(data.mobs)
                 for _, target in ipairs(targets) do
-                    local targetPart = GetTargetPart(target)
+                    local targetPart = getTargetPart(target)
                     if targetPart then
                         pcall(function()
                             RequestHit:FireServer(targetPart)
@@ -304,6 +289,7 @@ task.spawn(function()
     end
 end)
 
+-- Vòng lặp chính
 task.spawn(function()
     repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     
@@ -326,11 +312,9 @@ task.spawn(function()
         if target then
             tweenToTarget(target)
             
-            local attackStart = tick()
             while _G.AutoQuestEnabled and target and target.Parent and target:FindFirstChildOfClass("Humanoid") do
                 local humanoid = target.Humanoid
                 if humanoid.Health <= 0 then break end
-                if tick() - attackStart > 45 then break end
                 
                 local root = target:FindFirstChild("HumanoidRootPart")
                 if not root then break end
