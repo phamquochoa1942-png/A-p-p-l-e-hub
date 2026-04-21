@@ -1,17 +1,17 @@
 --[[
-    Apple Hub - Sailor Piece Auto Farm
-    Cải tiến: Auto Attack siêu nhanh + Đánh nhiều mục tiêu
+    Apple Hub - Sailor Piece Auto Farm (FIXED)
+    Sửa: Đánh có sát thương + Tự động tìm đúng part để đánh
 --]]
 
 _G.AutoQuestEnabled = true
 _G.FastAttackEnabled = true
 _G.VirtualClickEnabled = true
-_G.MultiTargetEnabled = true  -- Đánh nhiều quái cùng lúc
+_G.MultiTargetEnabled = true
 
 local HEIGHT_OFFSET = 8
 local TWEEN_SPEED = 200
 local QUEST_COOLDOWN = 1.5
-local ATTACK_RANGE = 25  -- Phạm vi đánh AOE
+local ATTACK_RANGE = 25
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -50,10 +50,6 @@ local FarmTable = {
     {min = 12000, max = 16000, quest = "QuestNPC19", mobs = {"ArenaFighter1", "Arena Fighter"}},
 }
 
-local function notify(title, msg, duration)
-    print("[" .. title .. "] " .. msg)
-end
-
 local function getCharacter()
     return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 end
@@ -89,7 +85,7 @@ local function getBestFarmData(level)
     return FarmTable[#FarmTable]
 end
 
-local function getNearbyTargets(mobList, mainTarget)
+local function getNearbyTargets(mobList)
     local hrp = getHRP()
     local targets = {}
     local NPCs = workspace:FindFirstChild("NPCs")
@@ -167,10 +163,7 @@ end
 
 local function acceptQuest(questName)
     local NPC = findNPC(questName)
-    if not NPC then
-        notify("Apple Hub", "Khong tim thay NPC: " .. questName, 2)
-        return false
-    end
+    if not NPC then return false end
     
     local hrp = getHRP()
     local npcRoot = NPC:FindFirstChild("HumanoidRootPart") or NPC.Head
@@ -213,7 +206,7 @@ local function startFloat()
         bv = Instance.new("BodyVelocity")
         bv.Name = "FloatBody"
         bv.Velocity = Vector3.zero
-        bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)  -- Tăng lên 1,000,000 lực
+        bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
         bv.Parent = hrp
     end
     
@@ -267,7 +260,19 @@ local function tweenToTarget(target)
     end
 end
 
--- Click ảo siêu nhanh (không delay)
+-- Hàm lấy part để đánh (ưu tiên HumanoidRootPart hoặc Torso)
+local function GetTargetPart(mob)
+    local parts = {"HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso", "Head"}
+    for _, partName in ipairs(parts) do
+        local part = mob:FindFirstChild(partName)
+        if part then
+            return part
+        end
+    end
+    return nil
+end
+
+-- Click ảo M1
 task.spawn(function()
     while _G.AutoQuestEnabled do
         if _G.VirtualClickEnabled and isFloating then
@@ -278,20 +283,21 @@ task.spawn(function()
     end
 end)
 
--- Fast Attack siêu nhanh (không delay, đánh nhiều mục tiêu)
+-- Fast Attack với RequestHit (có truyền target)
 task.spawn(function()
     while _G.AutoQuestEnabled do
         if _G.FastAttackEnabled and isFloating then
-            if _G.MultiTargetEnabled then
-                local data = getBestFarmData(getLevel())
-                if data then
-                    local targets = getNearbyTargets(data.mobs)
-                    for _, target in ipairs(targets) do
-                        pcall(RequestHit.FireServer, RequestHit)
+            local data = getBestFarmData(getLevel())
+            if data then
+                local targets = getNearbyTargets(data.mobs)
+                for _, target in ipairs(targets) do
+                    local targetPart = GetTargetPart(target)
+                    if targetPart then
+                        pcall(function()
+                            RequestHit:FireServer(targetPart)
+                        end)
                     end
                 end
-            else
-                pcall(RequestHit.FireServer, RequestHit)
             end
         end
         task.wait()
@@ -301,8 +307,6 @@ end)
 task.spawn(function()
     repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     
-    notify("Apple Hub", "Auto Farm da san sang!", 3)
-    
     while _G.AutoQuestEnabled do
         task.wait(1)
         
@@ -311,7 +315,6 @@ task.spawn(function()
         if not data then continue end
         
         if currentQuest ~= data.quest then
-            notify("Apple Hub", "Doi Quest: " .. data.quest .. " (Level " .. level .. ")", 2)
             abandonQuest()
             task.wait(0.5)
             acceptQuest(data.quest)
@@ -347,7 +350,6 @@ task.spawn(function()
     end
     
     stopFloat()
-    notify("Apple Hub", "Auto Farm da dung!", 2)
 end)
 
 print("Apple Hub - Sailor Piece Auto Farm da khoi dong!") 
