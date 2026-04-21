@@ -1,10 +1,11 @@
 --[[
     Apple Hub - Sailor Piece Auto Farm
-    Chỉ dùng Remote RequestHit - Không click ảo, không Bring Mob
+    Fix: Chuyển quái nhanh + Tốc độ đánh 0.12
 --]]
 
 _G.AutoQuestEnabled = true
 _G.FastAttackEnabled = true
+_G.AttackSpeed = 0.12
 
 local HEIGHT_OFFSET = 8
 local TWEEN_SPEED = 200
@@ -268,7 +269,7 @@ local function tweenToTarget(target)
     end
 end
 
--- Fast Attack dùng Remote thẳng (không click ảo)
+-- Fast Attack dùng Remote thẳng
 task.spawn(function()
     while _G.AutoQuestEnabled do
         if _G.FastAttackEnabled and isFloating then
@@ -285,7 +286,7 @@ task.spawn(function()
                 end
             end
         end
-        task.wait()
+        task.wait(_G.AttackSpeed)
     end
 end)
 
@@ -294,11 +295,12 @@ task.spawn(function()
     repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     
     while _G.AutoQuestEnabled do
-        task.wait(1)
-        
         local level = getLevel()
         local data = getBestFarmData(level)
-        if not data then continue end
+        if not data then
+            task.wait(1)
+            continue
+        end
         
         if currentQuest ~= data.quest then
             abandonQuest()
@@ -312,9 +314,15 @@ task.spawn(function()
         if target then
             tweenToTarget(target)
             
-            while _G.AutoQuestEnabled and target and target.Parent and target:FindFirstChildOfClass("Humanoid") do
+            while _G.AutoQuestEnabled do
+                if not target or not target.Parent or not target:FindFirstChildOfClass("Humanoid") then
+                    break
+                end
+                
                 local humanoid = target.Humanoid
-                if humanoid.Health <= 0 then break end
+                if humanoid.Health <= 0 then
+                    break
+                end
                 
                 local root = target:FindFirstChild("HumanoidRootPart")
                 if not root then break end
@@ -329,8 +337,10 @@ task.spawn(function()
             stopFloat()
         else
             stopFloat()
-            task.wait(2)
+            task.wait(0.5)
         end
+        
+        task.wait()
     end
     
     stopFloat()
