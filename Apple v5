@@ -1,293 +1,353 @@
-_G.AutoQuestEnabled = true
+--[[
+    Apple Hub - Sailor Piece Auto Farm
+    Cải tiến: Auto Attack siêu nhanh + Đánh nhiều mục tiêu
+--]]
 
-task.spawn(function()
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Players = game:GetService("Players")
-    local TweenService = game:GetService("TweenService")
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-    local RunService = game:GetService("RunService")
-    local LocalPlayer = Players.LocalPlayer
-    local AttackRemote = ReplicatedStorage.CombatSystem.Remotes.RequestHit
-    
-    local OriginalGravity = workspace.Gravity
-    local NoFallConnection = nil
-    local IsClicking = false
-    
-    local QuestRoute = {
-        {MinLv = 1, MaxLv = 99, Mob = "Thief", QuestName = "Thief Hunter"},
-        {MinLv = 100, MaxLv = 249, Mob = "Thief Boss", QuestName = "Thief Boss"},
-        {MinLv = 250, MaxLv = 499, Mob = "Monkey", QuestName = "Monkey Hunter"},
-        {MinLv = 500, MaxLv = 749, Mob = "Monkey Boss", QuestName = "Monkey Boss"},
-        {MinLv = 750, MaxLv = 999, Mob = "Desert Bandit", QuestName = "Desert Bandit"},
-        {MinLv = 1000, MaxLv = 1499, Mob = "Desert Bandit Boss", QuestName = "Desert Boss"},
-        {MinLv = 1500, MaxLv = 1999, Mob = "Frost Rogue", QuestName = "Frost Rogue"},
-        {MinLv = 2000, MaxLv = 2999, Mob = "Winter Warden Boss", QuestName = "Winter Warden"},
-        {MinLv = 3000, MaxLv = 3999, Mob = "Sorcerer", QuestName = "Sorcerer Hunter"},
-        {MinLv = 4000, MaxLv = 5000, Mob = "Panda Sorcerer", QuestName = "Panda Boss"},
-        {MinLv = 5000, MaxLv = 6250, Mob = "Hollow", QuestName = "Hollow Hunter"},
-        {MinLv = 6250, MaxLv = 7000, Mob = "Strong Sorcerer", QuestName = "Strong Sorcerer Hunter"},
-        {MinLv = 7000, MaxLv = 8000, Mob = "Curse", QuestName = "Curse Hunter"},
-        {MinLv = 8000, MaxLv = 9000, Mob = "Slime Warrior", QuestName = "Slime Warrior"},
-        {MinLv = 9000, MaxLv = 10000, Mob = "Academy Teacher", QuestName = "Academy Challenge"},
-        {MinLv = 10000, MaxLv = 11500, Mob = "Quincy", QuestName = "Quincy Hunter"},
-        {MinLv = 11500, MaxLv = 12000, Mob = "Ninja", QuestName = "Ninja"},
-        {MinLv = 12000, MaxLv = 16000, Mob = "Arena Fighter", QuestName = "Arena Fighter"}
-    }
-    
-    local function GetLevel()
-        local LevelValue = nil
-        
-        if LocalPlayer:FindFirstChild("Data") then
-            LevelValue = LocalPlayer.Data:FindFirstChild("Level")
+_G.AutoQuestEnabled = true
+_G.FastAttackEnabled = true
+_G.VirtualClickEnabled = true
+_G.MultiTargetEnabled = true  -- Đánh nhiều quái cùng lúc
+
+local HEIGHT_OFFSET = 8
+local TWEEN_SPEED = 200
+local QUEST_COOLDOWN = 1.5
+local ATTACK_RANGE = 25  -- Phạm vi đánh AOE
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local CombatSystem = ReplicatedStorage:WaitForChild("CombatSystem")
+local Remotes = CombatSystem:WaitForChild("Remotes")
+local RequestHit = Remotes:WaitForChild("RequestHit")
+
+local currentQuest = nil
+local isFloating = false
+local floatConnection = nil
+
+local FarmTable = {
+    {min = 1,     max = 99,    quest = "QuestNPC1",  mobs = {"Thief1", "Thief2", "Thief"}},
+    {min = 100,   max = 249,   quest = "QuestNPC2",  mobs = {"ThiefBoss1", "Thief Boss"}},
+    {min = 250,   max = 499,   quest = "QuestNPC3",  mobs = {"Monkey1", "Monkey"}},
+    {min = 500,   max = 749,   quest = "QuestNPC4",  mobs = {"MonkeyBoss1", "Monkey Boss"}},
+    {min = 750,   max = 999,   quest = "QuestNPC5",  mobs = {"DesertBandit1", "Desert Bandit"}},
+    {min = 1000,  max = 1499,  quest = "QuestNPC6",  mobs = {"DesertBoss1", "Desert Bandit Boss"}},
+    {min = 1500,  max = 1999,  quest = "QuestNPC7",  mobs = {"FrostRogue1", "Frost Rogue"}},
+    {min = 2000,  max = 2999,  quest = "QuestNPC8",  mobs = {"WinterWarden1", "Winter Warden Boss"}},
+    {min = 3000,  max = 3999,  quest = "QuestNPC9",  mobs = {"Sorcerer1", "Sorcerer"}},
+    {min = 4000,  max = 5000,  quest = "QuestNPC10", mobs = {"PandaSorcerer1", "Panda Sorcerer"}},
+    {min = 5000,  max = 6250,  quest = "QuestNPC11", mobs = {"Hollow1", "Hollow"}},
+    {min = 6250,  max = 7000,  quest = "QuestNPC12", mobs = {"StrongSorcerer1", "Strong Sorcerer"}},
+    {min = 7000,  max = 8000,  quest = "QuestNPC13", mobs = {"Curse1", "Curse"}},
+    {min = 8000,  max = 9000,  quest = "QuestNPC14", mobs = {"Slime1", "Slime Warrior"}},
+    {min = 9000,  max = 10000, quest = "QuestNPC15", mobs = {"AcademyTeacher1", "Academy Teacher"}},
+    {min = 10000, max = 10750, quest = "QuestNPC16", mobs = {"Swordsman1", "Quincy"}},
+    {min = 10750, max = 11500, quest = "QuestNPC17", mobs = {"StrongQuincy1", "Strong Quincy"}},
+    {min = 11500, max = 12000, quest = "QuestNPC18", mobs = {"Ninja1", "Ninja"}},
+    {min = 12000, max = 16000, quest = "QuestNPC19", mobs = {"ArenaFighter1", "Arena Fighter"}},
+}
+
+local function notify(title, msg, duration)
+    print("[" .. title .. "] " .. msg)
+end
+
+local function getCharacter()
+    return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+end
+
+local function getHRP()
+    local char = getCharacter()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local function getLevel()
+    local success, data = pcall(function()
+        return LocalPlayer.Data.Level.Value
+    end)
+    if success and type(data) == "number" then
+        return data
+    else
+        local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
+        if leaderstats then
+            local lv = leaderstats:FindFirstChild("Level") or leaderstats:FindFirstChild("LVL")
+            if lv then return lv.Value end
         end
-        
-        if not LevelValue then
-            LevelValue = LocalPlayer:FindFirstChild("Level")
-        end
-        
-        if not LevelValue then
-            local Leaderstats = LocalPlayer:FindFirstChild("leaderstats")
-            if Leaderstats then
-                LevelValue = Leaderstats:FindFirstChild("Level") or Leaderstats:FindFirstChild("LVL")
-            end
-        end
-        
-        if not LevelValue then
-            warn("Khong tim thay data Level")
-            return nil
-        end
-        
-        return LevelValue.Value or 1
+        warn("[Apple Hub] Khong doc duoc Level")
+        return 0
     end
-    
-    local function GetCurrentQuestConfig()
-        local Lv = GetLevel()
-        if not Lv then return nil end
-        
-        for _, cfg in ipairs(QuestRoute) do
-            if Lv >= cfg.MinLv and Lv <= cfg.MaxLv then
-                return cfg
-            end
+end
+
+local function getBestFarmData(level)
+    for _, v in ipairs(FarmTable) do
+        if level >= v.min and level <= v.max then
+            return v
         end
-        return QuestRoute[#QuestRoute]
     end
+    return FarmTable[#FarmTable]
+end
+
+local function getNearbyTargets(mobList, mainTarget)
+    local hrp = getHRP()
+    local targets = {}
+    local NPCs = workspace:FindFirstChild("NPCs")
+    if not NPCs then return targets end
     
-    local function FindNPC(questName)
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj:IsA("Model") and string.find(obj.Name, questName) and obj:FindFirstChild("Head") then
-                return obj
-            end
-        end
-        return nil
-    end
-    
-    local function HasQuest(questName)
-        local PlayerGui = LocalPlayer.PlayerGui
-        for _, gui in ipairs(PlayerGui:GetChildren()) do
-            for _, child in ipairs(gui:GetDescendants()) do
-                if child:IsA("TextLabel") and string.find(child.Text, questName) then
-                    return true
+    for _, name in ipairs(mobList) do
+        for _, mob in ipairs(NPCs:GetChildren()) do
+            if mob:IsA("Model") and mob.Name == name then
+                local humanoid = mob:FindFirstChildOfClass("Humanoid")
+                local root = mob:FindFirstChild("HumanoidRootPart")
+                if humanoid and humanoid.Health > 0 and root then
+                    local dist = (hrp.Position - root.Position).Magnitude
+                    if dist <= ATTACK_RANGE then
+                        table.insert(targets, mob)
+                    end
                 end
             end
         end
+    end
+    return targets
+end
+
+local function getNearestTarget(mobList)
+    local hrp = getHRP()
+    local nearest = nil
+    local minDist = math.huge
+    
+    local NPCs = workspace:FindFirstChild("NPCs")
+    if not NPCs then return nil end
+    
+    for _, name in ipairs(mobList) do
+        for _, mob in ipairs(NPCs:GetChildren()) do
+            if mob:IsA("Model") and mob.Name == name then
+                local humanoid = mob:FindFirstChildOfClass("Humanoid")
+                local root = mob:FindFirstChild("HumanoidRootPart")
+                if humanoid and humanoid.Health > 0 and root then
+                    local dist = (hrp.Position - root.Position).Magnitude
+                    if dist < minDist then
+                        minDist = dist
+                        nearest = mob
+                    end
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+local function findNPC(questName)
+    local nearest = nil
+    local minDist = math.huge
+    local hrp = getHRP()
+    
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and string.find(obj.Name, questName) and obj:FindFirstChild("Head") then
+            local root = obj:FindFirstChild("HumanoidRootPart") or obj.Head
+            local dist = (hrp.Position - root.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                nearest = obj
+            end
+        end
+    end
+    return nearest
+end
+
+local function abandonQuest()
+    pcall(function()
+        local remote = ReplicatedStorage:FindFirstChild("RemoteEvents")
+        if remote and remote:FindFirstChild("QuestAbandon") then
+            remote.QuestAbandon:FireServer("repeatable")
+        end
+    end)
+end
+
+local function acceptQuest(questName)
+    local NPC = findNPC(questName)
+    if not NPC then
+        notify("Apple Hub", "Khong tim thay NPC: " .. questName, 2)
         return false
     end
     
-    local function StopNoFall()
-        if NoFallConnection then
-            NoFallConnection:Disconnect()
-            NoFallConnection = nil
-        end
-        workspace.Gravity = OriginalGravity
-        local Char = LocalPlayer.Character
-        if Char then
-            local Humanoid = Char:FindFirstChildOfClass("Humanoid")
-            if Humanoid then
-                Humanoid.WalkSpeed = 16
-                Humanoid.JumpPower = 50
-                Humanoid.PlatformStand = false
-                Humanoid.AutoRotate = true
-            end
-            for _, Part in ipairs(Char:GetDescendants()) do
-                if Part:IsA("BasePart") then
-                    Part.CanCollide = true
-                end
-            end
-        end
+    local hrp = getHRP()
+    local npcRoot = NPC:FindFirstChild("HumanoidRootPart") or NPC.Head
+    
+    local dist = (hrp.Position - npcRoot.Position).Magnitude
+    if dist > 50 then
+        local time = math.clamp(dist / TWEEN_SPEED, 0.5, 3)
+        local tween = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            CFrame = npcRoot.CFrame * CFrame.new(0, 0, -5)
+        })
+        tween:Play()
+        tween.Completed:Wait()
+    else
+        hrp.CFrame = npcRoot.CFrame * CFrame.new(0, 0, -5)
     end
     
-    local function StartNoFall()
-        StopNoFall()
-        workspace.Gravity = 0
-        local Char = LocalPlayer.Character
-        if Char then
-            local Humanoid = Char:FindFirstChildOfClass("Humanoid")
-            if Humanoid then
-                Humanoid.WalkSpeed = 0
-                Humanoid.JumpPower = 0
-                Humanoid.PlatformStand = true
-            end
-            for _, Part in ipairs(Char:GetDescendants()) do
-                if Part:IsA("BasePart") and Part.Name ~= "HumanoidRootPart" then
-                    Part.CanCollide = false
-                end
-            end
-        end
-        NoFallConnection = RunService.Heartbeat:Connect(function()
-            local Char = LocalPlayer.Character
-            if Char then
-                local Root = Char:FindFirstChild("HumanoidRootPart")
-                if Root then
-                    Root.Velocity = Vector3.new(0, 0, 0)
-                    Root.RotVelocity = Vector3.new(0, 0, 0)
-                end
-            end
-        end)
+    local prompt = NPC:FindFirstChildWhichIsA("ProximityPrompt")
+    if prompt then
+        fireproximityprompt(prompt)
+        task.wait(0.5)
     end
     
-    local function AcceptQuest(cfg)
-        if not cfg then return false end
-        if HasQuest(cfg.QuestName) then return true end
-        
-        local NPC = FindNPC(cfg.QuestName)
-        if not NPC then return false end
-        
-        local Char = LocalPlayer.Character
-        if not Char then return false end
-        
-        local Root = Char:FindFirstChild("HumanoidRootPart")
-        if not Root then return false end
-        
-        local NPCRoot = NPC:FindFirstChild("HumanoidRootPart") or NPC:FindFirstChild("Head")
-        if not NPCRoot then return false end
-        
-        local Distance = (Root.Position - NPCRoot.Position).Magnitude
-        if Distance > 100 then
-            TweenService:Create(Root, TweenInfo.new(Distance / 100, Enum.EasingStyle.Linear), {CFrame = NPCRoot.CFrame * CFrame.new(0, 0, -5)}):Play()
-            task.wait(Distance / 100)
-        else
-            Root.CFrame = NPCRoot.CFrame * CFrame.new(0, 0, -5)
-        end
-        
-        local Prompt = NPC:FindFirstChildWhichIsA("ProximityPrompt")
-        if Prompt then
-            fireproximityprompt(Prompt)
-            task.wait(1)
-        end
-        
-        local PlayerGui = LocalPlayer.PlayerGui
-        for _, gui in ipairs(PlayerGui:GetChildren()) do
-            for _, btn in ipairs(gui:GetDescendants()) do
-                if btn:IsA("TextButton") and (string.find(btn.Text, "Accept") or string.find(btn.Text, "Yes")) then
-                    local ClickDetector = btn:FindFirstChildWhichIsA("ClickDetector")
-                    if ClickDetector then
-                        fireclickdetector(ClickDetector)
-                    end
-                    break
-                end
-            end
-        end
-        
-        task.wait(1)
-        return HasQuest(cfg.QuestName)
-    end
-    
-    local function FindEnemy(mobName)
-        local NPCs = workspace:FindFirstChild("NPCs")
-        if not NPCs then return nil end
-        
-        for _, obj in ipairs(NPCs:GetChildren()) do
-            if obj:IsA("Model") and obj.Name == mobName then
-                local Humanoid = obj:FindFirstChildOfClass("Humanoid")
-                local Root = obj:FindFirstChild("HumanoidRootPart")
-                if Humanoid and Humanoid.Health > 0 and Root then
-                    return obj
-                end
-            end
-        end
-        return nil
-    end
-    
-    local function ForceReset()
-        IsClicking = false
-        StopNoFall()
-    end
-    
-    task.spawn(function()
-        while _G.AutoQuestEnabled do
-            if IsClicking then
-                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-                task.wait()
-                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-                task.wait()
-            else
-                task.wait(0.05)
-            end
+    pcall(function()
+        local remote = ReplicatedStorage:FindFirstChild("RemoteEvents")
+        if remote and remote:FindFirstChild("QuestAccept") then
+            remote.QuestAccept:FireServer(questName)
         end
     end)
     
-    while _G.AutoQuestEnabled do
-        local Character = LocalPlayer.Character
-        if not Character then
-            ForceReset()
-            task.wait(1)
-            continue
-        end
-        
-        local Root = Character:FindFirstChild("HumanoidRootPart")
-        if not Root then
-            ForceReset()
-            task.wait(1)
-            continue
-        end
-        
-        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-        if not Humanoid or Humanoid.Health <= 0 then
-            ForceReset()
-            task.wait(1)
-            continue
-        end
-        
-        local cfg = GetCurrentQuestConfig()
-        if not cfg then
-            task.wait(1)
-            continue
-        end
-        
-        AcceptQuest(cfg)
-        
-        local Target = FindEnemy(cfg.Mob)
-        if Target then
-            IsClicking = true
-            StartNoFall()
-            
-            local EnemyRoot = Target:FindFirstChild("HumanoidRootPart")
-            if EnemyRoot then
-                local Distance = (Root.Position - EnemyRoot.Position).Magnitude
-                if Distance > 50 then
-                    TweenService:Create(Root, TweenInfo.new(Distance / 100, Enum.EasingStyle.Linear), {CFrame = EnemyRoot.CFrame * CFrame.new(0, 10, 0)}):Play()
-                    task.wait(Distance / 100)
-                end
+    return true
+end
+
+local function startFloat()
+    if isFloating then return end
+    isFloating = true
+    
+    local hrp = getHRP()
+    local bv = hrp:FindFirstChild("FloatBody")
+    if not bv then
+        bv = Instance.new("BodyVelocity")
+        bv.Name = "FloatBody"
+        bv.Velocity = Vector3.zero
+        bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)  -- Tăng lên 1,000,000 lực
+        bv.Parent = hrp
+    end
+    
+    if floatConnection then floatConnection:Disconnect() end
+    floatConnection = RunService.Stepped:Connect(function()
+        local char = getCharacter()
+        for _, part in ipairs(char:GetDescendants()) do
+            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                part.CanCollide = false
             end
+        end
+        hrp.Velocity = Vector3.zero
+    end)
+end
+
+local function stopFloat()
+    isFloating = false
+    if floatConnection then
+        floatConnection:Disconnect()
+        floatConnection = nil
+    end
+    local hrp = getHRP()
+    local bv = hrp:FindFirstChild("FloatBody")
+    if bv then bv:Destroy() end
+    
+    local char = getCharacter()
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+        end
+    end
+end
+
+local function tweenToTarget(target)
+    local hrp = getHRP()
+    local root = target:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    startFloat()
+    
+    local targetPos = root.Position + Vector3.new(0, HEIGHT_OFFSET, 0)
+    local dist = (hrp.Position - targetPos).Magnitude
+    
+    if dist > 30 then
+        local time = math.clamp(dist / TWEEN_SPEED, 0.3, 2)
+        local tween = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            CFrame = CFrame.new(targetPos)
+        })
+        tween:Play()
+        tween.Completed:Wait()
+    end
+end
+
+-- Click ảo siêu nhanh (không delay)
+task.spawn(function()
+    while _G.AutoQuestEnabled do
+        if _G.VirtualClickEnabled and isFloating then
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+        end
+        task.wait()
+    end
+end)
+
+-- Fast Attack siêu nhanh (không delay, đánh nhiều mục tiêu)
+task.spawn(function()
+    while _G.AutoQuestEnabled do
+        if _G.FastAttackEnabled and isFloating then
+            if _G.MultiTargetEnabled then
+                local data = getBestFarmData(getLevel())
+                if data then
+                    local targets = getNearbyTargets(data.mobs)
+                    for _, target in ipairs(targets) do
+                        pcall(RequestHit.FireServer, RequestHit)
+                    end
+                end
+            else
+                pcall(RequestHit.FireServer, RequestHit)
+            end
+        end
+        task.wait()
+    end
+end)
+
+task.spawn(function()
+    repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    
+    notify("Apple Hub", "Auto Farm da san sang!", 3)
+    
+    while _G.AutoQuestEnabled do
+        task.wait(1)
+        
+        local level = getLevel()
+        local data = getBestFarmData(level)
+        if not data then continue end
+        
+        if currentQuest ~= data.quest then
+            notify("Apple Hub", "Doi Quest: " .. data.quest .. " (Level " .. level .. ")", 2)
+            abandonQuest()
+            task.wait(0.5)
+            acceptQuest(data.quest)
+            currentQuest = data.quest
+            task.wait(QUEST_COOLDOWN)
+        end
+        
+        local target = getNearestTarget(data.mobs)
+        if target then
+            tweenToTarget(target)
             
-            while _G.AutoQuestEnabled and Target and Target.Parent and Target:FindFirstChildOfClass("Humanoid") and Target.Humanoid.Health > 0 do
-                EnemyRoot = Target:FindFirstChild("HumanoidRootPart")
-                if not EnemyRoot then break end
+            local attackStart = tick()
+            while _G.AutoQuestEnabled and target and target.Parent and target:FindFirstChildOfClass("Humanoid") do
+                local humanoid = target.Humanoid
+                if humanoid.Health <= 0 then break end
+                if tick() - attackStart > 45 then break end
                 
-                Root.CFrame = EnemyRoot.CFrame * CFrame.new(0, 10, 0)
-                Root.Velocity = Vector3.new(0, 0, 0)
+                local root = target:FindFirstChild("HumanoidRootPart")
+                if not root then break end
                 
-                pcall(function()
-                    AttackRemote:FireServer()
-                end)
+                local hrp = getHRP()
+                hrp.CFrame = root.CFrame * CFrame.new(0, HEIGHT_OFFSET, 0)
+                hrp.Velocity = Vector3.zero
                 
                 task.wait()
             end
             
-            ForceReset()
+            stopFloat()
         else
-            ForceReset()
+            stopFloat()
             task.wait(2)
         end
     end
+    
+    stopFloat()
+    notify("Apple Hub", "Auto Farm da dung!", 2)
 end)
+
+print("Apple Hub - Sailor Piece Auto Farm da khoi dong!") 
